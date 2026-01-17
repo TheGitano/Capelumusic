@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Token del bot (obténlo de @BotFather en Telegram)
 TOKEN = '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA'
-
+"Actualizar con diseño del Lobo"
 class MusicBot:
     def __init__(self):
         self.user_searches = {}
@@ -359,4 +359,5 @@ def main():
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
+
     main()
