@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Token del bot (obténlo de @BotFather en Telegram)
 TOKEN = '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA'
-"Actualizar con diseño del Lobo"
+
 class MusicBot:
     def __init__(self):
         self.user_searches = {}
@@ -37,53 +37,100 @@ class MusicBot:
             "🎬 Reproducir con video o solo audio\n"
             "💿 Escuchar álbumes completos\n"
             "⭐ Crear playlists de lo mejor\n"
-            "🎵 ¡Y mucho más!\n\n"
+            "🎤 ¡Modo KARAOKE para cantar!\n"
+            "🌍 Versiones en español e idioma original\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            "✨ *Solo escribe:*\n"
-            "• El nombre de una canción\n"
-            "• El nombre de un artista\n"
-            "• O canta una estrofa\n\n"
-            "🐺 *Tu Lobo está listo para aullar contigo* 🎶\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            "✨ *Elige qué quieres hacer:*"
         )
         
-        await update.message.reply_text(welcome_message, parse_mode='Markdown')
+        # Menú principal con botones
+        keyboard = [
+            [InlineKeyboardButton("🎵 Buscar canciones", callback_data="mode_music")],
+            [InlineKeyboardButton("🎤 Buscar karaokes", callback_data="mode_karaoke")],
+            [InlineKeyboardButton("ℹ️ Ayuda", callback_data="help")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(welcome_message, reply_markup=reply_markup, parse_mode='Markdown')
     
-    async def search_music(self, query: str):
+    async def search_music(self, query: str, max_results=5):
         """Busca música en YouTube"""
         ydl_opts = {
             'quiet': True,
             'no_warnings': True,
             'extract_flat': True,
-            'default_search': 'ytsearch5',
+            'default_search': f'ytsearch{max_results}',
         }
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                results = ydl.extract_info(f"ytsearch5:{query}", download=False)
+                results = ydl.extract_info(f"ytsearch{max_results}:{query}", download=False)
                 if 'entries' in results:
-                    return results['entries'][:5]
+                    return results['entries'][:max_results]
                 return []
         except Exception as e:
             logger.error(f"Error en búsqueda: {e}")
             return []
     
+    async def check_video_availability(self, video_id):
+        """Verifica si un video se puede descargar"""
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'skip_download': True,
+        }
+        
+        try:
+            url = f"https://www.youtube.com/watch?v={video_id}"
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                duration = info.get('duration', 0)
+                if duration < 60:
+                    return False
+                return True
+        except Exception as e:
+            logger.error(f"Video no disponible {video_id}: {e}")
+            return False
+    
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Maneja mensajes de texto (búsquedas)"""
-        query = update.message.text
+        """Maneja mensajes de texto y voz (búsquedas)"""
         user_id = update.effective_user.id
         
-        # Mensaje de búsqueda personalizado
+        # Verificar si hay un modo activo
+        if user_id not in self.user_searches or 'mode' not in self.user_searches[user_id]:
+            keyboard = [
+                [InlineKeyboardButton("🎵 Buscar canciones", callback_data="mode_music")],
+                [InlineKeyboardButton("🎤 Buscar karaokes", callback_data="mode_karaoke")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await update.message.reply_text(
+                "🐺 *Primero elige qué quieres hacer:*",
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+            return
+        
+        mode = self.user_searches[user_id]['mode']
+        query = update.message.text
+        
+        # Añadir "karaoke" a la búsqueda si está en modo karaoke
+        search_query = f"{query} karaoke" if mode == 'karaoke' else query
+        
         await update.message.reply_text(
             f"🐺 *Tu Lobo está rastreando...*\n"
             f"🔍 Buscando: *{query}*\n"
+            f"{'🎤 Modo: KARAOKE' if mode == 'karaoke' else ''}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━",
             parse_mode='Markdown'
         )
         
-        results = await self.search_music(query)
+        # Buscar versión original
+        results = await self.search_music(search_query)
         
-        if not results:
+        # Buscar versión en español
+        spanish_results = await self.search_music(f"{query} español spanish") if mode == 'music' else []
+        
+        if not results and not spanish_results:
             await update.message.reply_text(
                 "🐺 *¡Woof!*\n\n"
                 "😔 No encontré nada en mi territorio...\n"
@@ -93,28 +140,45 @@ class MusicBot:
             return
         
         # Guardar resultados para este usuario
-        self.user_searches[user_id] = {
-            'query': query,
-            'results': results
-        }
+        self.user_searches[user_id]['query'] = query
+        self.user_searches[user_id]['results'] = results
+        self.user_searches[user_id]['spanish_results'] = spanish_results
         
-        # Mostrar opciones con emojis
+        # Mostrar opciones
         keyboard = []
+        
+        if mode == 'music' and spanish_results:
+            keyboard.append([InlineKeyboardButton(
+                "🌍 Ver versiones (Original y Español)", 
+                callback_data="show_versions"
+            )])
+        
+        # Mostrar resultados principales
         emojis = ["🎵", "🎸", "🎹", "🎺", "🎻"]
         for i, result in enumerate(results[:5]):
             title = result.get('title', 'Sin título')
+            emoji = "🎤" if mode == 'karaoke' else emojis[i]
             keyboard.append([InlineKeyboardButton(
-                f"{emojis[i]} {title[:55]}", 
+                f"{emoji} {title[:55]}", 
                 callback_data=f"select_{i}"
             )])
         
-        keyboard.append([InlineKeyboardButton("🔙 Nueva búsqueda", callback_data="new_search")])
+        keyboard.append([InlineKeyboardButton("🔙 Volver al menú", callback_data="back_to_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        message_text = (
+            f"🐺 *¡Tu Lobo encontró {'karaokes' if mode == 'karaoke' else 'canciones'}!*\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+        )
+        
+        if mode == 'music' and spanish_results:
+            message_text += "💡 *Vero, encontré versiones en español e idioma original*\n\n"
+        
+        message_text += "Selecciona la que quieras:"
+        
         await update.message.reply_text(
-            "🐺 *¡Tu Lobo encontró estas canciones!*\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Selecciona la que quieras escuchar:",
+            message_text,
             reply_markup=reply_markup,
             parse_mode='Markdown'
         )
@@ -127,41 +191,211 @@ class MusicBot:
         user_id = update.effective_user.id
         data = query.data
         
-        if data == "new_search":
+        if data == "back_to_menu":
+            # Limpiar datos del usuario
+            if user_id in self.user_searches:
+                del self.user_searches[user_id]
+            
+            wolf_logo = """
+        ╔══════════════════════════════════════╗
+        ║            🐺  TU LOBO  🐺           ║
+        ╚══════════════════════════════════════╝
+            """
+            keyboard = [
+                [InlineKeyboardButton("🎵 Buscar canciones", callback_data="mode_music")],
+                [InlineKeyboardButton("🎤 Buscar karaokes", callback_data="mode_karaoke")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                "🐺 *Tu Lobo está listo para buscar de nuevo*\n\n"
+                f"{wolf_logo}\n\n🎵 *¿Qué quieres hacer, Vero?*",
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+            return
+        
+        if data == "mode_music":
+            self.user_searches[user_id] = {'mode': 'music'}
+            await query.edit_message_text(
+                "🐺 *Modo: Búsqueda de Canciones*\n\n"
                 "🎵 Escribe el nombre de una canción, artista\n"
-                "o canta una estrofa para buscar.\n"
+                "o canta una estrofa para buscar.\n\n"
+                "💡 Buscaré versiones en español e idioma original\n"
                 "━━━━━━━━━━━━━━━━━━━━━━"
             )
+            return
+        
+        if data == "mode_karaoke":
+            self.user_searches[user_id] = {'mode': 'karaoke'}
+            await query.edit_message_text(
+                "🐺 *Modo: Búsqueda de KARAOKES* 🎤\n\n"
+                "🎵 Escribe el nombre de la canción\n"
+                "que quieres cantar.\n\n"
+                "💡 Puedes escribir o enviar nota de voz\n"
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            )
+            return
+        
+        if data == "help":
+            await query.edit_message_text(
+                "🐺 *Ayuda - Tu Lobo Asistente*\n\n"
+                "🎵 *Modo Canciones:*\n"
+                "Busca música normal, álbumes y playlists\n\n"
+                "🎤 *Modo Karaoke:*\n"
+                "Busca versiones karaoke para cantar\n\n"
+                "✨ *Funciones:*\n"
+                "• Versiones en español e idioma original\n"
+                "• Con o sin letra en pantalla\n"
+                "• Video o solo audio\n"
+                "• Álbumes completos\n"
+                "• Playlists personalizadas\n"
+                "━━━━━━━━━━━━━━━━━━━━━━"
+            )
+            return
+        
+        if data == "show_versions":
+            if user_id not in self.user_searches:
+                return
+            
+            results = self.user_searches[user_id].get('results', [])
+            spanish_results = self.user_searches[user_id].get('spanish_results', [])
+            
+            keyboard = []
+            keyboard.append([InlineKeyboardButton("🌍 VERSIÓN ORIGINAL", callback_data="dummy")])
+            
+            for i, result in enumerate(results[:3]):
+                title = result.get('title', 'Sin título')
+                keyboard.append([InlineKeyboardButton(
+                    f"🎵 {title[:55]}", 
+                    callback_data=f"select_{i}"
+                )])
+            
+            keyboard.append([InlineKeyboardButton("🇪🇸 VERSIÓN EN ESPAÑOL", callback_data="dummy")])
+            
+            for i, result in enumerate(spanish_results[:3]):
+                title = result.get('title', 'Sin título')
+                keyboard.append([InlineKeyboardButton(
+                    f"🎵 {title[:55]}", 
+                    callback_data=f"select_spanish_{i}"
+                )])
+            
+            keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data="back_to_search")])
+            
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                "🐺 *Vero, aquí están las versiones:*\n"
+                "━━━━━━━━━━━━━━━━━━━━━━\n"
+                "Elige la que prefieras:",
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+            return
+        
+        if data.startswith("select_spanish_"):
+            idx = int(data.split("_")[2])
+            if user_id not in self.user_searches:
+                return
+            
+            selected = self.user_searches[user_id]['spanish_results'][idx]
+            self.user_searches[user_id]['selected'] = selected
+            self.user_searches[user_id]['is_spanish'] = True
+            
+            mode = self.user_searches[user_id].get('mode', 'music')
+            
+            if mode == 'karaoke':
+                # Ir directo a preguntar con/sin letra
+                keyboard = [
+                    [InlineKeyboardButton("📝 Con letra", callback_data="lyrics_yes")],
+                    [InlineKeyboardButton("🎵 Sin letra", callback_data="lyrics_no")],
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await query.edit_message_text(
+                    f"🐺 *¡Perfecto para cantar!*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🎤 {selected.get('title', 'Sin título')}\n\n"
+                    f"*Vero, ¿te gustaría que el video tenga la letra?*",
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown'
+                )
+            else:
+                # Mostrar opciones normales
+                keyboard = [
+                    [InlineKeyboardButton("🎵 Solo este tema", callback_data="play_single")],
+                    [InlineKeyboardButton("💿 Álbum completo", callback_data="play_album")],
+                    [InlineKeyboardButton("⭐ Playlist mejores temas", callback_data="play_best")],
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await query.edit_message_text(
+                    f"🐺 *¡Excelente elección!*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🎵 {selected.get('title', 'Sin título')}\n"
+                    f"🇪🇸 *Versión en Español*\n\n"
+                    f"*¿Cómo quieres disfrutarla?*",
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown'
+                )
             return
         
         if data.startswith("select_"):
             idx = int(data.split("_")[1])
             if user_id not in self.user_searches:
-                await query.edit_message_text(
-                    "🐺 *¡Ups!*\n"
-                    "❌ El rastro se perdió...\n"
-                    "Realiza una nueva búsqueda."
-                )
                 return
             
             selected = self.user_searches[user_id]['results'][idx]
             self.user_searches[user_id]['selected'] = selected
             
-            # Mostrar opciones de reproducción con estilo
+            mode = self.user_searches[user_id].get('mode', 'music')
+            
+            if mode == 'karaoke':
+                # Preguntar si quiere con o sin letra
+                keyboard = [
+                    [InlineKeyboardButton("📝 Con letra", callback_data="lyrics_yes")],
+                    [InlineKeyboardButton("🎵 Sin letra", callback_data="lyrics_no")],
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await query.edit_message_text(
+                    f"🐺 *¡Perfecto para cantar!*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🎤 {selected.get('title', 'Sin título')}\n\n"
+                    f"*Vero, ¿te gustaría que el video tenga la letra?*",
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown'
+                )
+            else:
+                # Mostrar opciones de reproducción
+                keyboard = [
+                    [InlineKeyboardButton("🎵 Solo este tema", callback_data="play_single")],
+                    [InlineKeyboardButton("💿 Álbum completo", callback_data="play_album")],
+                    [InlineKeyboardButton("⭐ Playlist mejores temas", callback_data="play_best")],
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await query.edit_message_text(
+                    f"🐺 *¡Excelente elección!*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🎵 {selected.get('title', 'Sin título')}\n\n"
+                    f"*¿Cómo quieres disfrutarla?*",
+                    reply_markup=reply_markup,
+                    parse_mode='Markdown'
+                )
+            return
+        
+        if data in ["lyrics_yes", "lyrics_no"]:
+            with_lyrics = data == "lyrics_yes"
+            self.user_searches[user_id]['with_lyrics'] = with_lyrics
+            
+            # Preguntar formato
             keyboard = [
-                [InlineKeyboardButton("🎵 Solo este tema", callback_data="play_single")],
-                [InlineKeyboardButton("💿 Álbum completo", callback_data="play_album")],
-                [InlineKeyboardButton("⭐ Playlist mejores temas", callback_data="play_best")],
+                [InlineKeyboardButton("🎥 Video", callback_data="format_video_karaoke")],
+                [InlineKeyboardButton("🎧 Solo audio", callback_data="format_audio_karaoke")],
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             await query.edit_message_text(
-                f"🐺 *¡Excelente elección!*\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"🎵 {selected.get('title', 'Sin título')}\n\n"
-                f"*¿Cómo quieres disfrutarla?*",
+                f"🐺 *Karaoke {'con' if with_lyrics else 'sin'} letra*\n\n"
+                f"*¿Cómo lo prefieres?*",
                 reply_markup=reply_markup,
                 parse_mode='Markdown'
             )
@@ -169,29 +403,45 @@ class MusicBot:
         
         if data in ["play_single", "play_album", "play_best"]:
             if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
-                await query.edit_message_text(
-                    "🐺 ❌ Sesión expirada.\nRealiza una nueva búsqueda."
-                )
                 return
             
-            selected = self.user_searches[user_id]['selected']
+            self.user_searches[user_id]['play_mode'] = data
             
-            # Opciones de formato
+            # Preguntar si quiere con letra
             keyboard = [
-                [InlineKeyboardButton("🎥 Con video", callback_data=f"format_video_{data}")],
-                [InlineKeyboardButton("🎧 Solo audio", callback_data=f"format_audio_{data}")],
+                [InlineKeyboardButton("📝 Con letra en pantalla", callback_data="lyrics_video_yes")],
+                [InlineKeyboardButton("🎵 Sin letra", callback_data="lyrics_video_no")],
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             mode_text = {
-                "play_single": "este tema 🎵",
-                "play_album": "el álbum completo 💿",
-                "play_best": "playlist de mejores temas ⭐"
+                "play_single": "este tema",
+                "play_album": "el álbum completo",
+                "play_best": "playlist de mejores temas"
             }
             
             await query.edit_message_text(
-                f"🐺 *Reproduciendo: {mode_text[data]}*\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
+                f"🐺 *Reproduciendo: {mode_text[data]}*\n\n"
+                f"*Vero, ¿te gustaría que tenga la letra en pantalla?*",
+                reply_markup=reply_markup,
+                parse_mode='Markdown'
+            )
+            return
+        
+        if data in ["lyrics_video_yes", "lyrics_video_no"]:
+            with_lyrics = data == "lyrics_video_yes"
+            self.user_searches[user_id]['with_lyrics'] = with_lyrics
+            play_mode = self.user_searches[user_id].get('play_mode', 'play_single')
+            
+            # Preguntar formato
+            keyboard = [
+                [InlineKeyboardButton("🎥 Con video", callback_data=f"format_video_{play_mode}")],
+                [InlineKeyboardButton("🎧 Solo audio", callback_data=f"format_audio_{play_mode}")],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await query.edit_message_text(
+                f"🐺 *{'Con' if with_lyrics else 'Sin'} letra en pantalla*\n\n"
                 f"*¿Cómo lo prefieres?*",
                 reply_markup=reply_markup,
                 parse_mode='Markdown'
@@ -201,13 +451,23 @@ class MusicBot:
         if data.startswith("format_"):
             parts = data.split("_")
             format_type = parts[1]  # video o audio
-            play_mode = "_".join(parts[2:])  # play_single, play_album, etc
+            play_mode = "_".join(parts[2:])  # play_single, play_album, karaoke, etc
             
             if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
-                await query.edit_message_text("🐺 ❌ Sesión expirada. Realiza una nueva búsqueda.")
                 return
             
             selected = self.user_searches[user_id]['selected']
+            with_lyrics = self.user_searches[user_id].get('with_lyrics', False)
+            
+            # Si pidió con letra, agregar "lyrics" a la búsqueda
+            if with_lyrics and format_type == "video":
+                # Re-buscar con lyrics
+                query_text = self.user_searches[user_id].get('query', '')
+                lyrics_results = await self.search_music(f"{query_text} lyrics video")
+                if lyrics_results:
+                    selected = lyrics_results[0]
+                    self.user_searches[user_id]['selected'] = selected
+            
             await self.play_music(query, selected, format_type, play_mode, user_id)
     
     async def play_music(self, query, selected, format_type, play_mode, user_id):
@@ -219,26 +479,66 @@ class MusicBot:
         )
         
         try:
-            if play_mode == "play_single":
+            if play_mode in ["play_single", "karaoke"]:
                 await self.download_and_send(query, selected, format_type)
             
             elif play_mode == "play_album":
-                # Buscar más canciones del mismo artista/álbum
-                artist_query = selected.get('channel', '') or selected.get('uploader', '')
+                artist = selected.get('channel', '') or selected.get('uploader', '')
+                title = selected.get('title', '')
+                
                 await query.edit_message_text(
-                    f"🐺 *Buscando álbum completo...*\n"
-                    f"🔍 {artist_query}\n"
+                    f"🐺 *Buscando el álbum completo...*\n"
+                    f"🔍 Rastreando videos relacionados\n"
                     f"━━━━━━━━━━━━━━━━━━━━━━"
                 )
                 
-                album_results = await self.search_music(f"{artist_query} full album")
-                if album_results:
-                    await self.download_and_send(query, album_results[0], format_type)
-                else:
+                album_query = f"{artist} {title} full album"
+                album_results = await self.search_music(album_query, max_results=10)
+                
+                if not album_results:
+                    await query.message.reply_text(
+                        "🐺 *No encontré un álbum completo*\n"
+                        "Reproduciendo la canción que seleccionaste...\n"
+                        "━━━━━━━━━━━━━━━━━━━━━━"
+                    )
                     await self.download_and_send(query, selected, format_type)
+                else:
+                    await query.message.reply_text(
+                        "🐺 *Verificando disponibilidad...*\n"
+                        "Esto puede tardar un momento\n"
+                        "━━━━━━━━━━━━━━━━━━━━━━"
+                    )
+                    
+                    available_videos = []
+                    for video in album_results:
+                        video_id = video.get('id')
+                        if video_id and await self.check_video_availability(video_id):
+                            available_videos.append(video)
+                    
+                    if not available_videos:
+                        await query.message.reply_text(
+                            "🐺 *Los videos del álbum no están disponibles*\n"
+                            "Reproduciendo la canción original...\n"
+                            "━━━━━━━━━━━━━━━━━━━━━━"
+                        )
+                        await self.download_and_send(query, selected, format_type)
+                    else:
+                        await query.message.reply_text(
+                            f"🐺 *¡Encontré {len(available_videos)} videos del álbum!*\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"Creando tu playlist exclusiva...\n"
+                            f"🎵 Enviando canciones una por una"
+                        )
+                        
+                        for i, video in enumerate(available_videos[:5], 1):
+                            await query.message.reply_text(
+                                f"🎵 *Canción {i} de {min(len(available_videos), 5)}*\n"
+                                f"━━━━━━━━━━━━━━━━━━━━━━"
+                            )
+                            await self.download_and_send(query, video, format_type, is_playlist=True)
+                            await asyncio.sleep(2)
             
             elif play_mode == "play_best":
-                # Buscar playlist de mejores temas
                 artist_query = selected.get('channel', '') or selected.get('uploader', '')
                 await query.edit_message_text(
                     f"🐺 *Buscando los mejores temas...*\n"
@@ -246,14 +546,36 @@ class MusicBot:
                     f"━━━━━━━━━━━━━━━━━━━━━━"
                 )
                 
-                best_results = await self.search_music(f"{artist_query} best hits greatest")
+                best_results = await self.search_music(f"{artist_query} best hits greatest", max_results=10)
+                
                 if best_results:
-                    await self.download_and_send(query, best_results[0], format_type)
+                    available_videos = []
+                    for video in best_results:
+                        video_id = video.get('id')
+                        if video_id and await self.check_video_availability(video_id):
+                            available_videos.append(video)
+                    
+                    if available_videos:
+                        await query.message.reply_text(
+                            f"🐺 *¡Encontré {len(available_videos)} grandes éxitos!*\n"
+                            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                            f"Preparando tu playlist..."
+                        )
+                        
+                        for i, video in enumerate(available_videos[:5], 1):
+                            await query.message.reply_text(
+                                f"⭐ *Hit {i} de {min(len(available_videos), 5)}*\n"
+                                f"━━━━━━━━━━━━━━━━━━━━━━"
+                            )
+                            await self.download_and_send(query, video, format_type, is_playlist=True)
+                            await asyncio.sleep(2)
+                    else:
+                        await self.download_and_send(query, best_results[0], format_type)
                 else:
                     await self.download_and_send(query, selected, format_type)
             
-            # Volver al menú con mensaje del lobo
-            keyboard = [[InlineKeyboardButton("🔙 Volver al inicio", callback_data="new_search")]]
+            # Volver al menú
+            keyboard = [[InlineKeyboardButton("🔙 Volver al menú principal", callback_data="back_to_menu")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             await query.message.reply_text(
@@ -268,21 +590,21 @@ class MusicBot:
             
         except Exception as e:
             logger.error(f"Error en reproducción: {e}")
-            await query.edit_message_text(
+            await query.message.reply_text(
                 f"🐺 *¡Auch!*\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"❌ Hubo un problema: {str(e)}\n\n"
                 f"Intenta con otra búsqueda."
             )
     
-    async def download_and_send(self, query, video_info, format_type):
+    async def download_and_send(self, query, video_info, format_type, is_playlist=False):
         """Descarga y envía el archivo"""
         video_id = video_info.get('id')
         url = f"https://www.youtube.com/watch?v={video_id}"
         
         if format_type == "video":
             ydl_opts = {
-                'format': 'best[ext=mp4][height<=720]/best',
+                'format': 'best[ext=mp4][height<=480]/best',
                 'outtmpl': f'downloads/{video_id}.%(ext)s',
                 'quiet': True,
             }
@@ -299,7 +621,6 @@ class MusicBot:
             }
         
         try:
-            # Crear directorio si no existe
             os.makedirs('downloads', exist_ok=True)
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -309,7 +630,6 @@ class MusicBot:
                 if format_type == "audio":
                     filename = filename.rsplit('.', 1)[0] + '.mp3'
             
-            # Enviar archivo con mensaje personalizado
             title = video_info.get('title', 'Sin título')
             
             if format_type == "video":
@@ -327,37 +647,32 @@ class MusicBot:
                         title=title
                     )
             
-            # Limpiar archivo
             if os.path.exists(filename):
                 os.remove(filename)
                 
         except Exception as e:
             logger.error(f"Error en descarga: {e}")
-            # Si falla la descarga, enviar link
-            await query.message.reply_text(
-                f"🐺 *{video_info.get('title', 'Sin título')}*\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"🔗 Link: {url}\n\n"
-                f"(No pude descargar el archivo,\npero puedes usar el link para reproducir)",
-                parse_mode='Markdown'
-            )
+            if not is_playlist:
+                await query.message.reply_text(
+                    f"🐺 *{video_info.get('title', 'Sin título')}*\n"
+                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
+                    f"🔗 Link: {url}\n\n"
+                    f"(No pude descargar este archivo,\npero puedes usar el link)",
+                    parse_mode='Markdown'
+                )
 
 def main():
     """Inicia el bot"""
     bot = MusicBot()
     
-    # Crear aplicación
     application = Application.builder().token(TOKEN).build()
     
-    # Handlers
     application.add_handler(CommandHandler("start", bot.start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, bot.handle_message))
     application.add_handler(CallbackQueryHandler(bot.handle_callback))
     
-    # Iniciar bot
     print("🐺 Bot del Lobo iniciado. Presiona Ctrl+C para detener.")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
-
     main()
