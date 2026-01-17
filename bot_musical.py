@@ -11,7 +11,7 @@ from pydub import AudioSegment
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = 'TU_TOKEN_AQUI'
+TOKEN = '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA'
 
 class MusicBot:
     def __init__(self):
