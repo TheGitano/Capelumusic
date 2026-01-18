@@ -93,16 +93,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```
-
-4. **Commit**
-
----
-
-### **PASO 4: Verificar que requirements.txt esté correcto**
-
-1. Abre `requirements.txt` en GitHub
-2. Asegúrate que tenga EXACTAMENTE esto:
-```
-python-telegram-bot==20.7
-yt-dlp==2024.12.23
