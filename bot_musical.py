@@ -7,8 +7,7 @@ import yt_dlp
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.getenv('TELEGRAM_TOKEN', '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA')
-
+TOKEN = '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA'
 class MusicBot:
     def __init__(self):
         self.user_searches = {}
@@ -93,3 +92,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
