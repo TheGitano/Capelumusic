@@ -15,6 +15,32 @@ TOKEN = '8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA'
 
 class MusicBot:
     def __init__(self):
+        
+        if data == "prev_album_page":
+            if user_id in self.user_searches:
+                self.user_searches[user_id]['album_page'] = self.user_searches[user_id].get('album_page', 0) - 1
+                query_text = self.user_searches[user_id].get('query', '')
+                await self.show_album_page(query, user_id, query_text)
+            return
+        
+        if data == "next_album_page":
+            if user_id in self.user_searches:
+                self.user_searches[user_id]['album_page'] = self.user_searches[user_id].get('album_page', 0) + 1
+                query_text = self.user_searches[user_id].get('query', '')
+                await self.show_album_page(query, user_id, query_text)
+            return
+        
+        if data == "next_song_page":
+            if user_id in self.user_searches:
+                self.user_searches[user_id]['song_page'] = self.user_searches[user_id].get('song_page', 0) + 1
+                await self.show_song_page(query, user_id)
+            return
+        
+        if data == "prev_song_page":
+            if user_id in self.user_searches:
+                self.user_searches[user_id]['song_page'] = self.user_searches[user_id].get('song_page', 0) - 1
+                await self.show_song_page(query, user_id)
+            return
         self.user_searches = {}
         self.user_playlists = {}
         self.recognizer = sr.Recognizer()
@@ -69,42 +95,73 @@ class MusicBot:
             return False
     
     async def search_all_albums(self, artist: str, progress_callback=None):
-        """Busca TODOS los álbumes del artista - HASTA 100 RESULTADOS"""
-        ydl_opts = {'quiet': True, 'no_warnings': True, 'extract_flat': False}
+        """Busca TODOS los álbumes del artista - SIN LÍMITE"""
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'extract_flat': True}
         
         albums = []
+        seen_ids = set()
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Buscar MUCHOS más resultados
-                results = ydl.extract_info(f"ytsearch100:{artist} full album discography", download=False)
+                # Buscar más resultados (YouTube limita a 100 por búsqueda)
+                results = ydl.extract_info(f"ytsearch100:{artist} album completo full", download=False)
                 
                 if 'entries' in results:
-                    total = len(results['entries'])
-                    
                     for i, entry in enumerate(results['entries']):
+                        if not entry:
+                            continue
+                        
+                        video_id = entry.get('id')
+                        if not video_id or video_id in seen_ids:
+                            continue
+                        
                         duration = entry.get('duration', 0)
-                        # Solo álbumes largos (más de 15 minutos)
-                        if duration > 900:
-                            video_id = entry['id']
+                        title = entry.get('title', '')
+                        
+                        # Solo álbumes (más de 15 minutos) y que contengan palabras clave
+                        title_lower = title.lower()
+                        is_album = duration > 900 and any(word in title_lower for word in ['album', 'disco', 'full', 'completo', 'sessions', 'mix'])
+                        
+                        if is_album:
+                            seen_ids.add(video_id)
                             
                             # Actualizar progreso
                             if progress_callback:
-                                await progress_callback(i + 1, total, len(albums))
+                                await progress_callback(i + 1, len(results['entries']), len(albums))
                             
-                            # VERIFICAR que funcione
-                            if await self.verify_video(video_id):
-                                albums.append({
-                                    'title': entry.get('title', 'Sin título'),
-                                    'id': video_id,
-                                    'url': f"https://www.youtube.com/watch?v={video_id}",
-                                    'duration': duration
-                                })
+                            albums.append({
+                                'title': title,
+                                'id': video_id,
+                                'url': f"https://www.youtube.com/watch?v={video_id}",
+                                'duration': duration
+                            })
+                
+                # Segunda búsqueda con variación
+                results2 = ydl.extract_info(f"ytsearch50:{artist} discografia", download=False)
+                
+                if 'entries' in results2:
+                    for entry in results2['entries']:
+                        if not entry:
+                            continue
+                        
+                        video_id = entry.get('id')
+                        if not video_id or video_id in seen_ids:
+                            continue
+                        
+                        duration = entry.get('duration', 0)
+                        if duration > 900:
+                            seen_ids.add(video_id)
+                            albums.append({
+                                'title': entry.get('title', 'Sin título'),
+                                'id': video_id,
+                                'url': f"https://www.youtube.com/watch?v={video_id}",
+                                'duration': duration
+                            })
                 
                 return albums
         except Exception as e:
             logger.error(f"Error álbumes: {e}")
-            return []
+            return albums
     
     async def search_karaokes(self, query: str):
         """Busca SOLO KARAOKES VERIFICADOS - CON LETRA"""
@@ -140,28 +197,32 @@ class MusicBot:
             logger.error(f"Error karaokes: {e}")
             return []
     
-    async def search_songs_verified(self, query: str, max_results=100):
-        """Busca TODAS las canciones VERIFICADAS - HASTA 100"""
-        ydl_opts = {'quiet': True, 'no_warnings': True, 'extract_flat': False}
+    async def search_songs_verified(self, query: str, max_results=50):
+        """Busca canciones - SIN verificación excesiva para mayor velocidad"""
+        ydl_opts = {'quiet': True, 'no_warnings': True, 'extract_flat': True}
         
         songs = []
+        seen_ids = set()
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Buscar el doble para tener margen después de verificar
-                search_amount = min(max_results * 2, 100)
-                results = ydl.extract_info(f"ytsearch{search_amount}:{query}", download=False)
+                # Buscar canciones
+                results = ydl.extract_info(f"ytsearch{max_results}:{query}", download=False)
                 
                 if 'entries' in results:
                     for entry in results['entries']:
-                        if len(songs) >= max_results:
-                            break
+                        if not entry:
+                            continue
                         
-                        video_id = entry['id']
+                        video_id = entry.get('id')
+                        if not video_id or video_id in seen_ids:
+                            continue
                         
-                        # VERIFICAR que funcione
-                        if await self.verify_video(video_id):
-                            # Detectar si tiene letra
+                        # No álbumes completos en canciones
+                        duration = entry.get('duration', 0)
+                        if duration > 0 and duration < 900:  # Menos de 15 minutos
+                            seen_ids.add(video_id)
+                            
                             title = entry.get('title', '').lower()
                             has_lyrics = 'lyrics' in title or 'letra' in title or 'official video' in title
                             
@@ -320,12 +381,45 @@ class MusicBot:
             }
             
             keyboard = []
-            for i, album in enumerate(albums):
-                mins = album['duration'] // 60
-                keyboard.append([InlineKeyboardButton(
-                    f"💿 {album['title'][:43]} ({mins}m)",
-                    callback_data=f"album_{i}"
-                )])
+            
+            # CRÍTICO: Telegram tiene un límite de ~100 botones
+            # Si hay más álbumes, dividir en grupos
+            total_albums = len(albums)
+            max_per_page = 90
+            
+            if total_albums > max_per_page:
+                # Guardar página actual
+                page = self.user_searches[user_id].get('album_page', 0)
+                start = page * max_per_page
+                end = min(start + max_per_page, total_albums)
+                albums_to_show = albums[start:end]
+                
+                for i, album in enumerate(albums_to_show):
+                    actual_index = start + i
+                    mins = album['duration'] // 60
+                    keyboard.append([InlineKeyboardButton(
+                        f"💿 {album['title'][:43]} ({mins}m)",
+                        callback_data=f"album_{actual_index}"
+                    )])
+                
+                # Navegación
+                nav_buttons = []
+                if page > 0:
+                    nav_buttons.append(InlineKeyboardButton("⬅️ Anterior", callback_data="prev_album_page"))
+                if end < total_albums:
+                    nav_buttons.append(InlineKeyboardButton("➡️ Siguiente", callback_data="next_album_page"))
+                
+                if nav_buttons:
+                    keyboard.append(nav_buttons)
+                
+                keyboard.append([InlineKeyboardButton(f"📄 Página {page + 1} de {(total_albums + max_per_page - 1) // max_per_page}", callback_data="dummy")])
+            else:
+                for i, album in enumerate(albums):
+                    mins = album['duration'] // 60
+                    keyboard.append([InlineKeyboardButton(
+                        f"💿 {album['title'][:43]} ({mins}m)",
+                        callback_data=f"album_{i}"
+                    )])
             
             keyboard.append([InlineKeyboardButton("🎵 Ver todas las canciones sueltas", callback_data="show_songs")])
             keyboard.append([InlineKeyboardButton("🔙 Menú", callback_data="back_to_menu")])
@@ -333,46 +427,63 @@ class MusicBot:
             reply_markup = InlineKeyboardMarkup(keyboard)
             await msg.edit_text(
                 f"🐺 *TODOS los álbumes de {query}:*\n\n"
-                f"✅ {len(albums)} álbumes verificados y funcionando",
+                f"✅ {total_albums} álbumes encontrados",
                 reply_markup=reply_markup,
                 parse_mode='Markdown'
             )
             return
         
-        # Si no hay álbumes, buscar canciones
+        # Búsqueda de canciones también con paginación
         await msg.edit_text(
             f"🔍 *{query}*\n\n"
-            f"🎵 Buscando canciones sueltas...\n"
-            f"⏳ Verificando que funcionen...",
+            f"🎵 Buscando canciones...",
             parse_mode='Markdown'
         )
         
-        songs = await self.search_songs_verified(query, max_results=100)
+        songs = await self.search_songs_verified(query, max_results=50)
         
         if not songs:
-            await msg.edit_text("🐺 No encontré nada verificado. Intenta otra búsqueda.")
+            await msg.edit_text("🐺 No encontré canciones. Intenta otra búsqueda.")
             return
         
         self.user_searches[user_id] = {
             'mode': 'music',
             'query': query,
-            'songs': songs
+            'songs': songs,
+            'song_page': 0
         }
         
         keyboard = []
-        for i, song in enumerate(songs):
-            emoji = "📝" if song.get('has_lyrics') else "🎵"
-            keyboard.append([InlineKeyboardButton(
-                f"{emoji} {song['title'][:48]}",
-                callback_data=f"play_{i}"
-            )])
+        total_songs = len(songs)
+        max_per_page = 90
+        
+        if total_songs > max_per_page:
+            # Paginación
+            songs_to_show = songs[:max_per_page]
+            
+            for i, song in enumerate(songs_to_show):
+                emoji = "📝" if song.get('has_lyrics') else "🎵"
+                keyboard.append([InlineKeyboardButton(
+                    f"{emoji} {song['title'][:48]}",
+                    callback_data=f"play_{i}"
+                )])
+            
+            keyboard.append([InlineKeyboardButton("➡️ Más canciones", callback_data="next_song_page")])
+            keyboard.append([InlineKeyboardButton(f"📄 Página 1 de {(total_songs + max_per_page - 1) // max_per_page}", callback_data="dummy")])
+        else:
+            for i, song in enumerate(songs):
+                emoji = "📝" if song.get('has_lyrics') else "🎵"
+                keyboard.append([InlineKeyboardButton(
+                    f"{emoji} {song['title'][:48]}",
+                    callback_data=f"play_{i}"
+                )])
         
         keyboard.append([InlineKeyboardButton("🔙 Menú", callback_data="back_to_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         await msg.edit_text(
-            f"🐺 *TODAS las canciones encontradas:*\n\n"
-            f"✅ {len(songs)} canciones verificadas\n"
+            f"🐺 *Canciones encontradas:*\n\n"
+            f"✅ {total_songs} canciones\n"
             f"📝 = Con letra",
             reply_markup=reply_markup,
             parse_mode='Markdown'
@@ -697,6 +808,92 @@ class MusicBot:
             )
             return
     
+    
+    async def show_album_page(self, query, user_id, artist):
+        """Muestra página de álbumes"""
+        albums = self.user_searches[user_id].get('albums', [])
+        page = self.user_searches[user_id].get('album_page', 0)
+        
+        max_per_page = 90
+        total_albums = len(albums)
+        total_pages = (total_albums + max_per_page - 1) // max_per_page
+        
+        start = page * max_per_page
+        end = min(start + max_per_page, total_albums)
+        albums_to_show = albums[start:end]
+        
+        keyboard = []
+        for i, album in enumerate(albums_to_show):
+            actual_index = start + i
+            mins = album['duration'] // 60
+            keyboard.append([InlineKeyboardButton(
+                f"💿 {album['title'][:43]} ({mins}m)",
+                callback_data=f"album_{actual_index}"
+            )])
+        
+        # Navegación
+        nav_buttons = []
+        if page > 0:
+            nav_buttons.append(InlineKeyboardButton("⬅️ Anterior", callback_data="prev_album_page"))
+        if end < total_albums:
+            nav_buttons.append(InlineKeyboardButton("➡️ Siguiente", callback_data="next_album_page"))
+        
+        if nav_buttons:
+            keyboard.append(nav_buttons)
+        
+        keyboard.append([InlineKeyboardButton(f"📄 Página {page + 1} de {total_pages}", callback_data="dummy")])
+        keyboard.append([InlineKeyboardButton("🎵 Ver canciones sueltas", callback_data="show_songs")])
+        keyboard.append([InlineKeyboardButton("🔙 Menú", callback_data="back_to_menu")])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            f"🐺 *Álbumes de {artist}:*\n\n✅ {total_albums} álbumes totales",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    
+    async def show_song_page(self, query, user_id):
+        """Muestra página de canciones"""
+        songs = self.user_searches[user_id].get('songs', [])
+        page = self.user_searches[user_id].get('song_page', 0)
+        
+        max_per_page = 90
+        total_songs = len(songs)
+        total_pages = (total_songs + max_per_page - 1) // max_per_page
+        
+        start = page * max_per_page
+        end = min(start + max_per_page, total_songs)
+        songs_to_show = songs[start:end]
+        
+        keyboard = []
+        for i, song in enumerate(songs_to_show):
+            actual_index = start + i
+            emoji = "📝" if song.get('has_lyrics') else "🎵"
+            keyboard.append([InlineKeyboardButton(
+                f"{emoji} {song['title'][:48]}",
+                callback_data=f"play_{actual_index}"
+            )])
+        
+        # Navegación
+        nav_buttons = []
+        if page > 0:
+            nav_buttons.append(InlineKeyboardButton("⬅️ Anterior", callback_data="prev_song_page"))
+        if end < total_songs:
+            nav_buttons.append(InlineKeyboardButton("➡️ Siguiente", callback_data="next_song_page"))
+        
+        if nav_buttons:
+            keyboard.append(nav_buttons)
+        
+        keyboard.append([InlineKeyboardButton(f"📄 Página {page + 1} de {total_pages}", callback_data="dummy")])
+        keyboard.append([InlineKeyboardButton("🔙 Menú", callback_data="back_to_menu")])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            f"🐺 *Canciones:*\n\n✅ {total_songs} canciones\n📝 = Con letra",
+            reply_markup=reply_markup,
+            parse_mode='Markdown'
+        )
+    
     async def play_now(self, query, song, is_karaoke=False):
         """Reproduce inmediatamente"""
         keyboard = [
@@ -733,4 +930,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
