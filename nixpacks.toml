@@ -1,20 +1,9 @@
 [phases.setup]
 nixPkgs = ["python310", "ffmpeg"]
+nixOverlays = ["https://github.com/railwayapp/nix-npm-overlay/archive/main.tar.gz"]
 
 [phases.install]
-cmds = ["pip install -r requirements.txt"]
+cmds = ["python3.10 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt"]
 
 [start]
-cmd = "python bot_musical.py"
-```
-
-### 4️⃣ .gitignore (ARCHIVO NUEVO - MUY IMPORTANTE)
-Crea un archivo `.gitignore` y pega esto:
-```
-downloads/
-*.mp3
-*.mp4
-venv/
-__pycache__/
-*.pyc
-.env
+cmd = ". .venv/bin/activate && python bot_musical.py"
