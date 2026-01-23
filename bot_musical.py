@@ -108,6 +108,9 @@ class MusicBot:
             'extract_flat': True,
             'default_search': 'ytsearch10',
             'socket_timeout': 30,
+            'extractor_args': {'youtube': {'skip': ['hls', 'dash']}},
+            'no_check_certificate': True,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         }
         
         try:
@@ -133,8 +136,10 @@ class MusicBot:
             }],
             'quiet': True,
             'no_warnings': True,
-            'max_filesize': 50 * 1024 * 1024,  # 50MB max
+            'max_filesize': 50 * 1024 * 1024,
             'socket_timeout': 60,
+            'no_check_certificate': True,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         }
         
         try:
