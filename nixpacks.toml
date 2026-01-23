@@ -1,9 +1,0 @@
-[phases.setup]
-nixPkgs = ["python310", "ffmpeg"]
-nixOverlays = ["https://github.com/railwayapp/nix-npm-overlay/archive/main.tar.gz"]
-
-[phases.install]
-cmds = ["python3.10 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt"]
-
-[start]
-cmd = ". .venv/bin/activate && python bot_musical.py"
