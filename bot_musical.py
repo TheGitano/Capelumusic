@@ -73,6 +73,8 @@ class MusicBot:
         keyboard = [
             [InlineKeyboardButton("🎵 Buscar Canciones", callback_data="menu_search_songs")],
             [InlineKeyboardButton("🎤 Buscar Karaokes", callback_data="menu_search_karaoke")],
+            [InlineKeyboardButton("💿 Buscar Discografías", callback_data="menu_search_discography")],
+            [InlineKeyboardButton("📀 Buscar Álbumes", callback_data="menu_search_albums")],
             [InlineKeyboardButton("📝 Crear Playlist", callback_data="menu_create_playlist")],
             [InlineKeyboardButton("❓ Ayuda", callback_data="menu_help")]
         ]
@@ -90,6 +92,8 @@ class MusicBot:
         keyboard = [
             [InlineKeyboardButton("🎵 Buscar Canciones", callback_data="menu_search_songs")],
             [InlineKeyboardButton("🎤 Buscar Karaokes", callback_data="menu_search_karaoke")],
+            [InlineKeyboardButton("💿 Buscar Discografías", callback_data="menu_search_discography")],
+            [InlineKeyboardButton("📀 Buscar Álbumes", callback_data="menu_search_albums")],
             [InlineKeyboardButton("📝 Crear Playlist", callback_data="menu_create_playlist")],
             [InlineKeyboardButton("❓ Ayuda", callback_data="menu_help")]
         ]
@@ -111,6 +115,10 @@ class MusicBot:
             "Busca por nombre de canción o artista. Muestra TODOS los resultados disponibles.\n\n"
             "*🎤 Buscar Karaokes:*\n"
             "Busca versiones karaoke de canciones o artistas.\n\n"
+            "*💿 Buscar Discografías:*\n"
+            "Busca toda la discografía completa de un artista o grupo.\n\n"
+            "*📀 Buscar Álbumes:*\n"
+            "Busca álbumes completos específicos de cualquier artista.\n\n"
             "*📝 Crear Playlist:*\n"
             "Crea tu propia lista de reproducción personalizada.\n\n"
             "*Límites:*\n"
@@ -118,7 +126,9 @@ class MusicBot:
             "*Ejemplos:*\n"
             "• `Bad Bunny`\n"
             "• `Monaco Bad Bunny`\n"
-            "• `The Weeknd Blinding Lights`",
+            "• `The Weeknd Blinding Lights`\n"
+            "• `Metallica discography`\n"
+            "• `Pink Floyd The Wall album`",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -160,6 +170,101 @@ class MusicBot:
         except Exception as e:
             logger.error(f"Error en búsqueda: {e}")
             return []
+    
+    async def search_discography(self, artist: str, max_results=200):
+        """Busca discografía completa de un artista"""
+        search_queries = [
+            f"{artist} discography full",
+            f"{artist} all albums",
+            f"{artist} complete discography",
+            f"{artist} full album",
+            f"{artist} álbum completo"
+        ]
+        
+        all_results = []
+        seen_ids = set()
+        
+        for search_query in search_queries:
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': True,
+                'default_search': f'ytsearch{max_results // len(search_queries)}',
+                'socket_timeout': 30,
+                'extractor_args': {'youtube': {'skip': ['hls', 'dash']}},
+                'no_check_certificate': True,
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            }
+            
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    logger.info(f"Buscando discografía: {search_query}")
+                    results = ydl.extract_info(f"ytsearch{max_results // len(search_queries)}:{search_query}", download=False)
+                    entries = results.get('entries', []) if results else []
+                    
+                    # Filtrar duplicados y videos muy cortos (menos de 10 minutos probablemente no sean álbumes)
+                    for entry in entries:
+                        video_id = entry.get('id')
+                        duration = entry.get('duration', 0)
+                        
+                        if video_id and video_id not in seen_ids and duration >= 600:  # Mínimo 10 minutos
+                            seen_ids.add(video_id)
+                            all_results.append(entry)
+                    
+                    await asyncio.sleep(1)  # Pequeña pausa entre búsquedas
+            except Exception as e:
+                logger.error(f"Error en búsqueda de discografía: {e}")
+                continue
+        
+        logger.info(f"Total discografía encontrada: {len(all_results)} álbumes/compilaciones")
+        return all_results
+    
+    async def search_albums(self, query: str, max_results=200):
+        """Busca álbumes completos"""
+        search_queries = [
+            f"{query} full album",
+            f"{query} álbum completo",
+            f"{query} complete album",
+            f"{query} disco completo"
+        ]
+        
+        all_results = []
+        seen_ids = set()
+        
+        for search_query in search_queries:
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': True,
+                'default_search': f'ytsearch{max_results // len(search_queries)}',
+                'socket_timeout': 30,
+                'extractor_args': {'youtube': {'skip': ['hls', 'dash']}},
+                'no_check_certificate': True,
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            }
+            
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    logger.info(f"Buscando álbumes: {search_query}")
+                    results = ydl.extract_info(f"ytsearch{max_results // len(search_queries)}:{search_query}", download=False)
+                    entries = results.get('entries', []) if results else []
+                    
+                    # Filtrar duplicados y videos muy cortos
+                    for entry in entries:
+                        video_id = entry.get('id')
+                        duration = entry.get('duration', 0)
+                        
+                        if video_id and video_id not in seen_ids and duration >= 600:  # Mínimo 10 minutos
+                            seen_ids.add(video_id)
+                            all_results.append(entry)
+                    
+                    await asyncio.sleep(1)  # Pequeña pausa entre búsquedas
+            except Exception as e:
+                logger.error(f"Error en búsqueda de álbumes: {e}")
+                continue
+        
+        logger.info(f"Total álbumes encontrados: {len(all_results)}")
+        return all_results
     
     async def download_audio(self, url: str, user_id: int):
         """Descarga audio de YouTube"""
@@ -206,9 +311,15 @@ class MusicBot:
             duration = result.get('duration')
             duration_str = self.format_duration(duration)
             
+            # Icono especial para discografías y álbumes
+            if search_type in ["discography", "albums"]:
+                icon = "💿" if search_type == "discography" else "📀"
+            else:
+                icon = "🎵"
+            
             # Mostrar artista si está disponible
-            display_text = f"🎵 {title[:35]}"
-            if channel:
+            display_text = f"{icon} {title[:35]}"
+            if channel and search_type not in ["discography", "albums"]:
                 display_text += f" - {channel[:15]}"
             display_text += duration_str
             
@@ -248,6 +359,10 @@ class MusicBot:
             await self.process_search(update, context, query, karaoke=False)
         elif user_state == 'waiting_karaoke':
             await self.process_search(update, context, query, karaoke=True)
+        elif user_state == 'waiting_discography':
+            await self.process_discography_search(update, context, query)
+        elif user_state == 'waiting_albums':
+            await self.process_albums_search(update, context, query)
         elif user_state == 'waiting_playlist_song':
             await self.process_playlist_search(update, context, query)
         else:
@@ -311,6 +426,120 @@ class MusicBot:
         await search_msg.edit_text(
             f"🐺 *Encontré {len(results)} {'karaokes' if karaoke else 'resultados'}* para: _{query}_\n\n"
             "Selecciona una opción:",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def process_discography_search(self, update: Update, context: ContextTypes.DEFAULT_TYPE, query: str):
+        """Procesa búsqueda de discografía completa"""
+        user_id = update.effective_user.id
+        
+        # Rate limiting
+        if not self.rate_limiter.is_allowed(user_id):
+            wait_time = self.rate_limiter.get_wait_time(user_id)
+            await update.message.reply_text(f"🐺 ¡Calma! Espera {wait_time} segundos.")
+            return
+        
+        search_msg = await update.message.reply_text(
+            f"💿 Buscando discografía completa de: *{query}*...\n"
+            "Esto puede tardar varios segundos...",
+            parse_mode='Markdown'
+        )
+        
+        try:
+            results = await asyncio.wait_for(
+                self.search_discography(query, max_results=200),
+                timeout=120.0
+            )
+        except asyncio.TimeoutError:
+            await search_msg.edit_text("🐺 La búsqueda tardó mucho. Intenta de nuevo.")
+            return
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            await search_msg.edit_text("🐺 Ocurrió un error. Intenta de nuevo.")
+            return
+        
+        if not results:
+            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+            await search_msg.edit_text(
+                f"🐺 No encontré discografías de: *{query}*\n"
+                "Intenta con otro artista o grupo.",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            return
+        
+        # Guardar resultados
+        self.user_searches[user_id] = {
+            'query': query,
+            'results': results,
+            'timestamp': datetime.now(),
+            'search_type': 'discography',
+            'page': 0
+        }
+        
+        keyboard = self.create_results_keyboard(results, page=0, search_type='discography')
+        
+        await search_msg.edit_text(
+            f"💿 *Encontré {len(results)} álbumes/compilaciones* de: _{query}_\n\n"
+            "Selecciona para ver detalles:",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def process_albums_search(self, update: Update, context: ContextTypes.DEFAULT_TYPE, query: str):
+        """Procesa búsqueda de álbumes completos"""
+        user_id = update.effective_user.id
+        
+        # Rate limiting
+        if not self.rate_limiter.is_allowed(user_id):
+            wait_time = self.rate_limiter.get_wait_time(user_id)
+            await update.message.reply_text(f"🐺 ¡Calma! Espera {wait_time} segundos.")
+            return
+        
+        search_msg = await update.message.reply_text(
+            f"📀 Buscando álbumes completos: *{query}*...\n"
+            "Esto puede tardar varios segundos...",
+            parse_mode='Markdown'
+        )
+        
+        try:
+            results = await asyncio.wait_for(
+                self.search_albums(query, max_results=200),
+                timeout=120.0
+            )
+        except asyncio.TimeoutError:
+            await search_msg.edit_text("🐺 La búsqueda tardó mucho. Intenta de nuevo.")
+            return
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            await search_msg.edit_text("🐺 Ocurrió un error. Intenta de nuevo.")
+            return
+        
+        if not results:
+            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+            await search_msg.edit_text(
+                f"🐺 No encontré álbumes con: *{query}*\n"
+                "Intenta con otro término de búsqueda.",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            return
+        
+        # Guardar resultados
+        self.user_searches[user_id] = {
+            'query': query,
+            'results': results,
+            'timestamp': datetime.now(),
+            'search_type': 'albums',
+            'page': 0
+        }
+        
+        keyboard = self.create_results_keyboard(results, page=0, search_type='albums')
+        
+        await search_msg.edit_text(
+            f"📀 *Encontré {len(results)} álbumes completos* para: _{query}_\n\n"
+            "Selecciona para ver detalles:",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -387,6 +616,30 @@ class MusicBot:
             )
             return
         
+        # Menú: Buscar discografías
+        if data == "menu_search_discography":
+            self.user_searches[user_id] = {'state': 'waiting_discography'}
+            await query.edit_message_text(
+                "🐺 *BUSCAR DISCOGRAFÍAS* 💿\n\n"
+                "Escribe el nombre del artista o grupo para buscar su discografía completa.\n\n"
+                "Ejemplo: `Metallica`, `Pink Floyd`, `Bad Bunny`\n\n"
+                "_Se buscarán todos los álbumes, compilaciones y ediciones disponibles._",
+                parse_mode='Markdown'
+            )
+            return
+        
+        # Menú: Buscar álbumes
+        if data == "menu_search_albums":
+            self.user_searches[user_id] = {'state': 'waiting_albums'}
+            await query.edit_message_text(
+                "🐺 *BUSCAR ÁLBUMES* 📀\n\n"
+                "Escribe el nombre del álbum o artista para buscar álbumes completos.\n\n"
+                "Ejemplo: `The Wall Pink Floyd`, `Thriller`, `Un Verano Sin Ti`\n\n"
+                "_Se buscarán álbumes completos de cualquier artista._",
+                parse_mode='Markdown'
+            )
+            return
+        
         # Menú: Crear playlist
         if data == "menu_create_playlist":
             if user_id not in self.user_playlists:
@@ -425,6 +678,10 @@ class MusicBot:
                 "Busca por nombre o artista. Muestra TODOS los resultados.\n\n"
                 "*🎤 Buscar Karaokes:*\n"
                 "Busca versiones karaoke.\n\n"
+                "*💿 Buscar Discografías:*\n"
+                "Busca TODA la discografía de un artista o grupo.\n\n"
+                "*📀 Buscar Álbumes:*\n"
+                "Busca álbumes completos específicos.\n\n"
                 "*📝 Crear Playlist:*\n"
                 "Crea tu lista personalizada.\n\n"
                 "*Límites:* 20 búsquedas/minuto",
@@ -477,6 +734,7 @@ class MusicBot:
             title = selected.get('title', 'Audio')
             artist = selected.get('channel', selected.get('uploader', 'Desconocido'))
             url = f"https://www.youtube.com/watch?v={video_id}"
+            duration = selected.get('duration', 0)
             
             self.user_searches[user_id]['selected'] = {
                 'url': url,
@@ -509,7 +767,11 @@ class MusicBot:
                 )
                 return
             
-            # Opciones normales
+            # Mostrar info según tipo
+            duration_str = self.format_duration(duration)
+            icon = "💿" if search_type == "discography" else "📀" if search_type == "albums" else "🎵"
+            
+            # Opciones
             keyboard = [
                 [InlineKeyboardButton("🔗 Ver enlace", callback_data=f"link_{idx}")],
                 [InlineKeyboardButton("⬇️ Descargar MP3", callback_data=f"download_{idx}")],
@@ -518,8 +780,9 @@ class MusicBot:
             ]
             
             await query.edit_message_text(
-                f"🐺🎵 *{title}*\n"
-                f"👤 {artist}\n\n"
+                f"🐺{icon} *{title}*\n"
+                f"👤 {artist}\n"
+                f"⏱️ Duración: {duration_str}\n\n"
                 "¿Qué quieres hacer?",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
