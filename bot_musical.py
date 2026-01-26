@@ -106,20 +106,26 @@ class MusicBot:
             'quiet': True,
             'no_warnings': True,
             'extract_flat': True,
-            'default_search': 'ytsearch10',
+            'format': 'bestaudio/best',
             'socket_timeout': 30,
-            'extractor_args': {'youtube': {'skip': ['hls', 'dash']}},
             'no_check_certificate': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'extractor_retries': 3,
+            'fragment_retries': 3,
         }
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 logger.info(f"Buscando: {query}")
                 results = ydl.extract_info(f"ytsearch10:{query}", download=False)
-                return results['entries'][:5] if 'entries' in results else []
+                
+                if not results or 'entries' not in results:
+                    logger.error("No se obtuvieron resultados")
+                    return []
+                
+                return results['entries'][:5]
         except Exception as e:
-            logger.error(f"Error en búsqueda: {e}")
+            logger.error(f"Error en búsqueda: {type(e).__name__} - {str(e)}")
             return []
     
     async def download_audio(self, url: str, user_id: int):
@@ -140,6 +146,8 @@ class MusicBot:
             'socket_timeout': 60,
             'no_check_certificate': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'extractor_retries': 3,
+            'fragment_retries': 3,
         }
         
         try:
@@ -149,7 +157,7 @@ class MusicBot:
                 filename = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
                 return filename, info.get('title', 'Audio')
         except Exception as e:
-            logger.error(f"Error en descarga: {e}")
+            logger.error(f"Error en descarga: {type(e).__name__} - {str(e)}")
             return None, None
     
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
