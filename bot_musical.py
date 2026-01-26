@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Token desde variable de entorno (IMPORTANTE para Railway)
-TOKEN = os.getenv('8472230810:AAF2Nfix6WumdeAUTjwvgQYd0hiIzMgClbA')
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
 if not TOKEN:
     raise ValueError("❌ TELEGRAM_BOT_TOKEN no está configurado en las variables de entorno")
@@ -430,4 +430,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
