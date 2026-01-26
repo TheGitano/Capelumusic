@@ -147,6 +147,18 @@ class MusicBot:
             logger.error(f"Error en descarga: {e}")
             return None, None
     
+    def format_duration(self, duration):
+        """Formatea la duración de forma segura"""
+        try:
+            if duration is None or duration == 0:
+                return ""
+            duration = int(float(duration))
+            minutes = duration // 60
+            seconds = duration % 60
+            return f" ({minutes}:{seconds:02d})"
+        except (ValueError, TypeError):
+            return ""
+    
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Maneja mensajes de texto (búsquedas)"""
         user_id = update.effective_user.id
@@ -201,8 +213,8 @@ class MusicBot:
         keyboard = []
         for i, result in enumerate(results[:5]):
             title = result.get('title', 'Sin título')
-            duration = result.get('duration', 0)
-            duration_str = f" ({int(duration)//60}:{int(duration)%60:02d})" if duration else ""
+            duration = result.get('duration')
+            duration_str = self.format_duration(duration)
             
             keyboard.append([
                 InlineKeyboardButton(
@@ -362,8 +374,8 @@ class MusicBot:
             keyboard = []
             for i, result in enumerate(results[:5]):
                 title = result.get('title', 'Sin título')
-                duration = result.get('duration', 0)
-                duration_str = f" ({int(duration)//60}:{int(duration)%60:02d})" if duration else ""
+                duration = result.get('duration')
+                duration_str = self.format_duration(duration)
                 
                 keyboard.append([
                     InlineKeyboardButton(
