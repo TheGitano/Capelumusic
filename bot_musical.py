@@ -21,13 +21,18 @@ TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("❌ TELEGRAM_BOT_TOKEN no está configurado en las variables de entorno")
 
-# Logo del lobo en ASCII
+# Logo mejorado del bot
 LOGO = """
-🐺═══════════════════════════🐺
-     BOT MUSICAL VERONICA
-     Tu asistente de música
-🐺═══════════════════════════🐺
+╔═══════════════════════════════════╗
+║  🐺    BOT MUSICAL VERONICA    🐺  ║
+║     ♪♫  Tu Asistente Musical  ♫♪   ║
+║          🎵 🎶 🎸 🎹 🎤           ║
+╚═══════════════════════════════════╝
 """
+
+# Separadores visuales
+SEPARATOR = "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+MINI_SEP = "─────────────────────"
 
 
 class RateLimiter:
@@ -67,68 +72,128 @@ class MusicBot:
         os.makedirs(self.download_folder, exist_ok=True)
     
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Comando /start - Menú principal"""
+        """Comando /start - Menú principal mejorado"""
         user_name = update.effective_user.first_name
         
         keyboard = [
-            [InlineKeyboardButton("🎵 Buscar Canciones", callback_data="menu_search_songs")],
-            [InlineKeyboardButton("🎤 Buscar Karaokes", callback_data="menu_search_karaoke")],
-            [InlineKeyboardButton("💿 Buscar Discografías", callback_data="menu_search_discography")],
-            [InlineKeyboardButton("📀 Buscar Álbumes", callback_data="menu_search_albums")],
-            [InlineKeyboardButton("📝 Crear Playlist", callback_data="menu_create_playlist")],
-            [InlineKeyboardButton("❓ Ayuda", callback_data="menu_help")]
+            [
+                InlineKeyboardButton("🎵 Canciones", callback_data="menu_search_songs"),
+                InlineKeyboardButton("🎤 Karaokes", callback_data="menu_search_karaoke")
+            ],
+            [
+                InlineKeyboardButton("💿 Discografías", callback_data="menu_search_discography"),
+                InlineKeyboardButton("📀 Álbumes", callback_data="menu_search_albums")
+            ],
+            [
+                InlineKeyboardButton("📝 Crear Playlist Personalizada", callback_data="menu_create_playlist")
+            ],
+            [
+                InlineKeyboardButton("❓ Ayuda & Guía", callback_data="menu_help"),
+                InlineKeyboardButton("ℹ️ Info del Bot", callback_data="menu_info")
+            ]
         ]
         
+        welcome_text = f"{LOGO}\n"
+        welcome_text += f"╭─────────────────────────╮\n"
+        welcome_text += f"│  ✨ ¡Hola *{user_name}*! ✨  \n"
+        welcome_text += f"╰─────────────────────────╯\n\n"
+        welcome_text += f"🎼 *Bienvenido a tu asistente musical* 🎼\n\n"
+        welcome_text += f"🔥 *Funciones disponibles:*\n"
+        welcome_text += f"   • Búsqueda ilimitada de canciones\n"
+        welcome_text += f"   • Karaokes de todo el mundo\n"
+        welcome_text += f"   • Discografías completas\n"
+        welcome_text += f"   • Álbumes completos\n"
+        welcome_text += f"   • Playlists personalizadas\n\n"
+        welcome_text += f"{SEPARATOR}\n"
+        welcome_text += f"👇 *Selecciona una opción:* 👇"
+        
         await update.message.reply_text(
-            f"{LOGO}\n"
-            f"*¡Hola {user_name}!* 🎵\n\n"
-            "¿Qué deseas hacer?",
+            welcome_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
     
     async def show_main_menu(self, query):
-        """Muestra el menú principal"""
+        """Muestra el menú principal mejorado"""
         keyboard = [
-            [InlineKeyboardButton("🎵 Buscar Canciones", callback_data="menu_search_songs")],
-            [InlineKeyboardButton("🎤 Buscar Karaokes", callback_data="menu_search_karaoke")],
-            [InlineKeyboardButton("💿 Buscar Discografías", callback_data="menu_search_discography")],
-            [InlineKeyboardButton("📀 Buscar Álbumes", callback_data="menu_search_albums")],
-            [InlineKeyboardButton("📝 Crear Playlist", callback_data="menu_create_playlist")],
-            [InlineKeyboardButton("❓ Ayuda", callback_data="menu_help")]
+            [
+                InlineKeyboardButton("🎵 Canciones", callback_data="menu_search_songs"),
+                InlineKeyboardButton("🎤 Karaokes", callback_data="menu_search_karaoke")
+            ],
+            [
+                InlineKeyboardButton("💿 Discografías", callback_data="menu_search_discography"),
+                InlineKeyboardButton("📀 Álbumes", callback_data="menu_search_albums")
+            ],
+            [
+                InlineKeyboardButton("📝 Crear Playlist Personalizada", callback_data="menu_create_playlist")
+            ],
+            [
+                InlineKeyboardButton("❓ Ayuda & Guía", callback_data="menu_help"),
+                InlineKeyboardButton("ℹ️ Info del Bot", callback_data="menu_info")
+            ]
         ]
         
+        menu_text = f"{LOGO}\n"
+        menu_text += f"🎼 *MENÚ PRINCIPAL* 🎼\n\n"
+        menu_text += f"{SEPARATOR}\n"
+        menu_text += f"👇 *Selecciona una opción:* 👇"
+        
         await query.edit_message_text(
-            f"{LOGO}\n"
-            "*¿Qué deseas hacer?*",
+            menu_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Comando /help"""
-        keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+        """Comando /help mejorado"""
+        keyboard = [[InlineKeyboardButton("🔙 Volver al Menú Principal", callback_data="back_to_main_menu")]]
+        
+        help_text = f"╔═══════════════════════════════╗\n"
+        help_text += f"║    🐺 GUÍA COMPLETA DE USO 🐺   ║\n"
+        help_text += f"╚═══════════════════════════════╝\n\n"
+        
+        help_text += f"┌─────────────────────────┐\n"
+        help_text += f"│  🎵 *BUSCAR CANCIONES*  │\n"
+        help_text += f"└─────────────────────────┘\n"
+        help_text += f"Busca canciones por nombre o artista.\n"
+        help_text += f"✨ Resultados ilimitados\n"
+        help_text += f"📝 Ejemplo: `Bad Bunny` o `Tusa`\n\n"
+        
+        help_text += f"┌─────────────────────────┐\n"
+        help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
+        help_text += f"└─────────────────────────┘\n"
+        help_text += f"Encuentra versiones karaoke.\n"
+        help_text += f"✨ Sin límites de búsqueda\n"
+        help_text += f"📝 Ejemplo: `Bohemian Rhapsody`\n\n"
+        
+        help_text += f"┌─────────────────────────┐\n"
+        help_text += f"│ 💿 *BUSCAR DISCOGRAFÍAS*│\n"
+        help_text += f"└─────────────────────────┘\n"
+        help_text += f"Toda la discografía de un artista.\n"
+        help_text += f"✨ Álbumes, compilaciones, ediciones\n"
+        help_text += f"📝 Ejemplo: `Metallica`, `Queen`\n\n"
+        
+        help_text += f"┌─────────────────────────┐\n"
+        help_text += f"│  📀 *BUSCAR ÁLBUMES*    │\n"
+        help_text += f"└─────────────────────────┘\n"
+        help_text += f"Álbumes completos del mundo.\n"
+        help_text += f"✨ Búsqueda sin restricciones\n"
+        help_text += f"📝 Ejemplo: `The Wall`, `Thriller`\n\n"
+        
+        help_text += f"┌─────────────────────────┐\n"
+        help_text += f"│  📝 *CREAR PLAYLIST*    │\n"
+        help_text += f"└─────────────────────────┘\n"
+        help_text += f"Tu lista personalizada de música.\n"
+        help_text += f"✨ Agrega todas las que quieras\n\n"
+        
+        help_text += f"{SEPARATOR}\n\n"
+        help_text += f"⚡ *LÍMITES:* 20 búsquedas/minuto\n"
+        help_text += f"💾 *DESCARGAS:* MP3 de alta calidad\n"
+        help_text += f"🔗 *ENLACES:* Directos de YouTube\n\n"
+        help_text += f"{SEPARATOR}"
         
         await update.message.reply_text(
-            "🐺 *GUÍA DE USO*\n\n"
-            "*🎵 Buscar Canciones:*\n"
-            "Busca por nombre de canción o artista. Muestra TODOS los resultados disponibles.\n\n"
-            "*🎤 Buscar Karaokes:*\n"
-            "Busca versiones karaoke de canciones o artistas.\n\n"
-            "*💿 Buscar Discografías:*\n"
-            "Busca toda la discografía completa de un artista o grupo.\n\n"
-            "*📀 Buscar Álbumes:*\n"
-            "Busca álbumes completos específicos de cualquier artista.\n\n"
-            "*📝 Crear Playlist:*\n"
-            "Crea tu propia lista de reproducción personalizada.\n\n"
-            "*Límites:*\n"
-            "• Máximo 20 búsquedas por minuto\n\n"
-            "*Ejemplos:*\n"
-            "• `Bad Bunny`\n"
-            "• `Monaco Bad Bunny`\n"
-            "• `The Weeknd Blinding Lights`\n"
-            "• `Metallica discography`\n"
-            "• `Pink Floyd The Wall album`",
+            help_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -141,7 +206,7 @@ class MusicBot:
             duration = int(float(duration))
             minutes = duration // 60
             seconds = duration % 60
-            return f" ({minutes}:{seconds:02d})"
+            return f" ⏱️{minutes}:{seconds:02d}"
         except (ValueError, TypeError):
             return ""
     
@@ -202,16 +267,15 @@ class MusicBot:
                     results = ydl.extract_info(f"ytsearch{max_results // len(search_queries)}:{search_query}", download=False)
                     entries = results.get('entries', []) if results else []
                     
-                    # Filtrar duplicados y videos muy cortos (menos de 10 minutos probablemente no sean álbumes)
                     for entry in entries:
                         video_id = entry.get('id')
                         duration = entry.get('duration', 0)
                         
-                        if video_id and video_id not in seen_ids and duration >= 600:  # Mínimo 10 minutos
+                        if video_id and video_id not in seen_ids and duration >= 600:
                             seen_ids.add(video_id)
                             all_results.append(entry)
                     
-                    await asyncio.sleep(1)  # Pequeña pausa entre búsquedas
+                    await asyncio.sleep(1)
             except Exception as e:
                 logger.error(f"Error en búsqueda de discografía: {e}")
                 continue
@@ -249,16 +313,15 @@ class MusicBot:
                     results = ydl.extract_info(f"ytsearch{max_results // len(search_queries)}:{search_query}", download=False)
                     entries = results.get('entries', []) if results else []
                     
-                    # Filtrar duplicados y videos muy cortos
                     for entry in entries:
                         video_id = entry.get('id')
                         duration = entry.get('duration', 0)
                         
-                        if video_id and video_id not in seen_ids and duration >= 600:  # Mínimo 10 minutos
+                        if video_id and video_id not in seen_ids and duration >= 600:
                             seen_ids.add(video_id)
                             all_results.append(entry)
                     
-                    await asyncio.sleep(1)  # Pequeña pausa entre búsquedas
+                    await asyncio.sleep(1)
             except Exception as e:
                 logger.error(f"Error en búsqueda de álbumes: {e}")
                 continue
@@ -311,16 +374,14 @@ class MusicBot:
             duration = result.get('duration')
             duration_str = self.format_duration(duration)
             
-            # Icono especial para discografías y álbumes
             if search_type in ["discography", "albums"]:
                 icon = "💿" if search_type == "discography" else "📀"
             else:
-                icon = "🎵"
+                icon = "♪"
             
-            # Mostrar artista si está disponible
-            display_text = f"{icon} {title[:35]}"
+            display_text = f"{icon} {title[:32]}"
             if channel and search_type not in ["discography", "albums"]:
-                display_text += f" - {channel[:15]}"
+                display_text += f" • {channel[:12]}"
             display_text += duration_str
             
             keyboard.append([
@@ -330,7 +391,6 @@ class MusicBot:
                 )
             ])
         
-        # Botones de navegación
         nav_buttons = []
         total_pages = (len(results) + results_per_page - 1) // results_per_page
         
@@ -343,7 +403,7 @@ class MusicBot:
             nav_buttons.append(InlineKeyboardButton("Siguiente ➡️", callback_data=f"page_{search_type}_{page+1}"))
         
         keyboard.append(nav_buttons)
-        keyboard.append([InlineKeyboardButton("🔙 Volver al Menú Principal", callback_data="back_to_main_menu")])
+        keyboard.append([InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")])
         
         return keyboard
     
@@ -352,7 +412,6 @@ class MusicBot:
         user_id = update.effective_user.id
         query = update.message.text.strip()
         
-        # Verificar si está en modo búsqueda
         user_state = self.user_searches.get(user_id, {}).get('state')
         
         if user_state == 'waiting_search':
@@ -366,8 +425,7 @@ class MusicBot:
         elif user_state == 'waiting_playlist_song':
             await self.process_playlist_search(update, context, query)
         else:
-            # Mensaje por defecto
-            keyboard = [[InlineKeyboardButton("🔙 Ir al Menú", callback_data="back_to_main_menu")]]
+            keyboard = [[InlineKeyboardButton("🏠 Ir al Menú Principal", callback_data="back_to_main_menu")]]
             await update.message.reply_text(
                 "🐺 Usa el menú para navegar por las opciones.",
                 reply_markup=InlineKeyboardMarkup(keyboard)
@@ -377,16 +435,26 @@ class MusicBot:
         """Procesa búsqueda de canciones o karaokes"""
         user_id = update.effective_user.id
         
-        # Rate limiting
         if not self.rate_limiter.is_allowed(user_id):
             wait_time = self.rate_limiter.get_wait_time(user_id)
-            await update.message.reply_text(f"🐺 ¡Calma! Espera {wait_time} segundos.")
+            await update.message.reply_text(
+                f"⏰ *Espera {wait_time} segundos*\n\n"
+                f"Has alcanzado el límite temporal.\n"
+                f"🐺 ¡Relájate un momento!",
+                parse_mode='Markdown'
+            )
             return
         
         search_type = "karaoke" if karaoke else "songs"
+        icon = "🎤" if karaoke else "🎵"
+        
         search_msg = await update.message.reply_text(
-            f"🔍 Buscando {'karaokes' if karaoke else 'canciones'}: *{query}*...\n"
-            "Esto puede tardar un momento...",
+            f"╭─────────────────────╮\n"
+            f"│  {icon} *BUSCANDO...*  │\n"
+            f"╰─────────────────────╯\n\n"
+            f"🔍 *Búsqueda:* _{query}_\n"
+            f"⏳ Esto puede tardar unos segundos...\n"
+            f"🐺 Preparando resultados ilimitados...",
             parse_mode='Markdown'
         )
         
@@ -396,23 +464,32 @@ class MusicBot:
                 timeout=60.0
             )
         except asyncio.TimeoutError:
-            await search_msg.edit_text("🐺 La búsqueda tardó mucho. Intenta con un término más específico.")
+            await search_msg.edit_text(
+                "⏰ *Tiempo agotado*\n\n"
+                "La búsqueda tardó demasiado.\n"
+                "Intenta con un término más específico."
+            )
             return
         except Exception as e:
             logger.error(f"Error: {e}")
-            await search_msg.edit_text("🐺 Ocurrió un error. Intenta de nuevo.")
-            return
-        
-        if not results:
-            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
             await search_msg.edit_text(
-                f"🐺 No encontré {'karaokes' if karaoke else 'canciones'} con ese nombre.\n"
-                "Intenta con otro término.",
-                reply_markup=InlineKeyboardMarkup(keyboard)
+                "❌ *Error en la búsqueda*\n\n"
+                "Ocurrió un problema. Intenta de nuevo."
             )
             return
         
-        # Guardar resultados
+        if not results:
+            keyboard = [[InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")]]
+            await search_msg.edit_text(
+                f"😔 *Sin resultados*\n\n"
+                f"No encontré {'karaokes' if karaoke else 'canciones'}\n"
+                f"con el término: _{query}_\n\n"
+                f"💡 Intenta con otro término.",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            return
+        
         self.user_searches[user_id] = {
             'query': query,
             'results': results,
@@ -423,9 +500,16 @@ class MusicBot:
         
         keyboard = self.create_results_keyboard(results, page=0, search_type=search_type)
         
+        result_text = f"╔═══════════════════════════╗\n"
+        result_text += f"║  {icon} *RESULTADOS ENCONTRADOS* {icon}  ║\n"
+        result_text += f"╚═══════════════════════════╝\n\n"
+        result_text += f"🔍 *Búsqueda:* _{query}_\n"
+        result_text += f"✅ *Total:* {len(results)} {'karaokes' if karaoke else 'resultados'}\n\n"
+        result_text += f"{MINI_SEP}\n"
+        result_text += f"👇 *Selecciona una opción:*"
+        
         await search_msg.edit_text(
-            f"🐺 *Encontré {len(results)} {'karaokes' if karaoke else 'resultados'}* para: _{query}_\n\n"
-            "Selecciona una opción:",
+            result_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -434,15 +518,24 @@ class MusicBot:
         """Procesa búsqueda de discografía completa"""
         user_id = update.effective_user.id
         
-        # Rate limiting
         if not self.rate_limiter.is_allowed(user_id):
             wait_time = self.rate_limiter.get_wait_time(user_id)
-            await update.message.reply_text(f"🐺 ¡Calma! Espera {wait_time} segundos.")
+            await update.message.reply_text(
+                f"⏰ *Espera {wait_time} segundos*\n\n"
+                f"Has alcanzado el límite temporal.\n"
+                f"🐺 ¡Relájate un momento!",
+                parse_mode='Markdown'
+            )
             return
         
         search_msg = await update.message.reply_text(
-            f"💿 Buscando discografía completa de: *{query}*...\n"
-            "Esto puede tardar varios segundos...",
+            f"╭─────────────────────────╮\n"
+            f"│  💿 *BUSCANDO DISCOGRAFÍA*  │\n"
+            f"╰─────────────────────────╯\n\n"
+            f"🎸 *Artista:* _{query}_\n"
+            f"⏳ Buscando TODOS los álbumes...\n"
+            f"🔍 Compilaciones, ediciones especiales...\n"
+            f"🐺 Esto puede tardar varios segundos...",
             parse_mode='Markdown'
         )
         
@@ -452,24 +545,32 @@ class MusicBot:
                 timeout=120.0
             )
         except asyncio.TimeoutError:
-            await search_msg.edit_text("🐺 La búsqueda tardó mucho. Intenta de nuevo.")
+            await search_msg.edit_text(
+                "⏰ *Tiempo agotado*\n\n"
+                "La búsqueda de discografía tardó mucho.\n"
+                "Intenta de nuevo."
+            )
             return
         except Exception as e:
             logger.error(f"Error: {e}")
-            await search_msg.edit_text("🐺 Ocurrió un error. Intenta de nuevo.")
+            await search_msg.edit_text(
+                "❌ *Error en la búsqueda*\n\n"
+                "Ocurrió un problema. Intenta de nuevo."
+            )
             return
         
         if not results:
-            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+            keyboard = [[InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")]]
             await search_msg.edit_text(
-                f"🐺 No encontré discografías de: *{query}*\n"
-                "Intenta con otro artista o grupo.",
+                f"😔 *Sin resultados*\n\n"
+                f"No encontré discografías de:\n"
+                f"🎸 _{query}_\n\n"
+                f"💡 Intenta con otro artista o grupo.",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
             return
         
-        # Guardar resultados
         self.user_searches[user_id] = {
             'query': query,
             'results': results,
@@ -480,9 +581,17 @@ class MusicBot:
         
         keyboard = self.create_results_keyboard(results, page=0, search_type='discography')
         
+        result_text = f"╔═══════════════════════════════╗\n"
+        result_text += f"║  💿 *DISCOGRAFÍA COMPLETA* 💿  ║\n"
+        result_text += f"╚═══════════════════════════════╝\n\n"
+        result_text += f"🎸 *Artista:* _{query}_\n"
+        result_text += f"✅ *Total encontrado:* {len(results)} álbumes\n"
+        result_text += f"📀 Incluye: Álbumes, compilaciones\n\n"
+        result_text += f"{MINI_SEP}\n"
+        result_text += f"👇 *Selecciona para ver detalles:*"
+        
         await search_msg.edit_text(
-            f"💿 *Encontré {len(results)} álbumes/compilaciones* de: _{query}_\n\n"
-            "Selecciona para ver detalles:",
+            result_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -491,15 +600,24 @@ class MusicBot:
         """Procesa búsqueda de álbumes completos"""
         user_id = update.effective_user.id
         
-        # Rate limiting
         if not self.rate_limiter.is_allowed(user_id):
             wait_time = self.rate_limiter.get_wait_time(user_id)
-            await update.message.reply_text(f"🐺 ¡Calma! Espera {wait_time} segundos.")
+            await update.message.reply_text(
+                f"⏰ *Espera {wait_time} segundos*\n\n"
+                f"Has alcanzado el límite temporal.\n"
+                f"🐺 ¡Relájate un momento!",
+                parse_mode='Markdown'
+            )
             return
         
         search_msg = await update.message.reply_text(
-            f"📀 Buscando álbumes completos: *{query}*...\n"
-            "Esto puede tardar varios segundos...",
+            f"╭─────────────────────────╮\n"
+            f"│  📀 *BUSCANDO ÁLBUMES*  │\n"
+            f"╰─────────────────────────╯\n\n"
+            f"🎼 *Búsqueda:* _{query}_\n"
+            f"⏳ Buscando álbumes completos...\n"
+            f"🌍 Buscando en todo el mundo...\n"
+            f"🐺 Esto puede tardar varios segundos...",
             parse_mode='Markdown'
         )
         
@@ -509,24 +627,32 @@ class MusicBot:
                 timeout=120.0
             )
         except asyncio.TimeoutError:
-            await search_msg.edit_text("🐺 La búsqueda tardó mucho. Intenta de nuevo.")
+            await search_msg.edit_text(
+                "⏰ *Tiempo agotado*\n\n"
+                "La búsqueda de álbumes tardó mucho.\n"
+                "Intenta de nuevo."
+            )
             return
         except Exception as e:
             logger.error(f"Error: {e}")
-            await search_msg.edit_text("🐺 Ocurrió un error. Intenta de nuevo.")
+            await search_msg.edit_text(
+                "❌ *Error en la búsqueda*\n\n"
+                "Ocurrió un problema. Intenta de nuevo."
+            )
             return
         
         if not results:
-            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+            keyboard = [[InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")]]
             await search_msg.edit_text(
-                f"🐺 No encontré álbumes con: *{query}*\n"
-                "Intenta con otro término de búsqueda.",
+                f"😔 *Sin resultados*\n\n"
+                f"No encontré álbumes con:\n"
+                f"🎼 _{query}_\n\n"
+                f"💡 Intenta con otro término.",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
             return
         
-        # Guardar resultados
         self.user_searches[user_id] = {
             'query': query,
             'results': results,
@@ -537,9 +663,17 @@ class MusicBot:
         
         keyboard = self.create_results_keyboard(results, page=0, search_type='albums')
         
+        result_text = f"╔═══════════════════════════════╗\n"
+        result_text += f"║  📀 *ÁLBUMES COMPLETOS* 📀  ║\n"
+        result_text += f"╚═══════════════════════════════╝\n\n"
+        result_text += f"🎼 *Búsqueda:* _{query}_\n"
+        result_text += f"✅ *Total encontrado:* {len(results)} álbumes\n"
+        result_text += f"🌍 De todo el mundo\n\n"
+        result_text += f"{MINI_SEP}\n"
+        result_text += f"👇 *Selecciona para ver detalles:*"
+        
         await search_msg.edit_text(
-            f"📀 *Encontré {len(results)} álbumes completos* para: _{query}_\n\n"
-            "Selecciona para ver detalles:",
+            result_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -548,7 +682,11 @@ class MusicBot:
         """Procesa búsqueda para agregar a playlist"""
         user_id = update.effective_user.id
         
-        search_msg = await update.message.reply_text(f"🔍 Buscando: *{query}*...", parse_mode='Markdown')
+        search_msg = await update.message.reply_text(
+            f"🔍 *Buscando:* _{query}_\n"
+            f"⏳ Un momento...",
+            parse_mode='Markdown'
+        )
         
         try:
             results = await asyncio.wait_for(
@@ -556,11 +694,17 @@ class MusicBot:
                 timeout=30.0
             )
         except Exception as e:
-            await search_msg.edit_text("🐺 Error en búsqueda. Intenta de nuevo.")
+            await search_msg.edit_text(
+                "❌ Error en búsqueda.\n"
+                "Intenta de nuevo."
+            )
             return
         
         if not results:
-            await search_msg.edit_text("🐺 No encontré resultados. Intenta otro término.")
+            await search_msg.edit_text(
+                "😔 No encontré resultados.\n"
+                "Intenta otro término."
+            )
             return
         
         self.user_searches[user_id]['results'] = results
@@ -569,8 +713,8 @@ class MusicBot:
         keyboard = self.create_results_keyboard(results, page=0, results_per_page=10, search_type="playlist")
         
         await search_msg.edit_text(
-            f"🐺 Resultados para: _{query}_\n\n"
-            "Selecciona una canción para agregar:",
+            f"✅ *Resultados para:* _{query}_\n\n"
+            f"👇 Selecciona una canción para agregar:",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -597,47 +741,84 @@ class MusicBot:
         # Menú: Buscar canciones
         if data == "menu_search_songs":
             self.user_searches[user_id] = {'state': 'waiting_search'}
-            await query.edit_message_text(
-                "🐺 *BUSCAR CANCIONES* 🎵\n\n"
-                "Escribe el nombre de la canción o artista que quieres buscar.\n\n"
-                "Ejemplo: `Bad Bunny` o `Monaco Bad Bunny`",
-                parse_mode='Markdown'
-            )
+            menu_text = f"╔═══════════════════════════╗\n"
+            menu_text += f"║  🎵 *BUSCAR CANCIONES* 🎵  ║\n"
+            menu_text += f"╚═══════════════════════════╝\n\n"
+            menu_text += f"🎼 Escribe el nombre de la canción\n"
+            menu_text += f"   o artista que quieres buscar.\n\n"
+            menu_text += f"✨ *Resultados ilimitados*\n"
+            menu_text += f"🌍 *De todo el mundo*\n\n"
+            menu_text += f"{MINI_SEP}\n\n"
+            menu_text += f"📝 *Ejemplos:*\n"
+            menu_text += f"   • `Bad Bunny`\n"
+            menu_text += f"   • `Monaco Bad Bunny`\n"
+            menu_text += f"   • `Shakira Waka Waka`"
+            
+            await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
         
         # Menú: Buscar karaokes
         if data == "menu_search_karaoke":
             self.user_searches[user_id] = {'state': 'waiting_karaoke'}
-            await query.edit_message_text(
-                "🐺 *BUSCAR KARAOKES* 🎤\n\n"
-                "Escribe el nombre de la canción o artista para buscar karaokes.\n\n"
-                "Ejemplo: `The Weeknd Blinding Lights`",
-                parse_mode='Markdown'
-            )
+            menu_text = f"╔═══════════════════════════╗\n"
+            menu_text += f"║  🎤 *BUSCAR KARAOKES* 🎤  ║\n"
+            menu_text += f"╚═══════════════════════════╝\n\n"
+            menu_text += f"🎤 Escribe el nombre de la canción\n"
+            menu_text += f"   o artista para buscar karaokes.\n\n"
+            menu_text += f"✨ *Sin límites de búsqueda*\n"
+            menu_text += f"🎵 *Versiones instrumentales*\n\n"
+            menu_text += f"{MINI_SEP}\n\n"
+            menu_text += f"📝 *Ejemplos:*\n"
+            menu_text += f"   • `Bohemian Rhapsody`\n"
+            menu_text += f"   • `The Weeknd Blinding Lights`\n"
+            menu_text += f"   • `Luis Miguel`"
+            
+            await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
         
         # Menú: Buscar discografías
         if data == "menu_search_discography":
             self.user_searches[user_id] = {'state': 'waiting_discography'}
-            await query.edit_message_text(
-                "🐺 *BUSCAR DISCOGRAFÍAS* 💿\n\n"
-                "Escribe el nombre del artista o grupo para buscar su discografía completa.\n\n"
-                "Ejemplo: `Metallica`, `Pink Floyd`, `Bad Bunny`\n\n"
-                "_Se buscarán todos los álbumes, compilaciones y ediciones disponibles._",
-                parse_mode='Markdown'
-            )
+            menu_text = f"╔═══════════════════════════════╗\n"
+            menu_text += f"║  💿 *BUSCAR DISCOGRAFÍAS* 💿  ║\n"
+            menu_text += f"╚═══════════════════════════════╝\n\n"
+            menu_text += f"🎸 Escribe el nombre del artista o\n"
+            menu_text += f"   grupo para buscar su discografía\n"
+            menu_text += f"   COMPLETA.\n\n"
+            menu_text += f"✨ *Álbumes completos*\n"
+            menu_text += f"📀 *Compilaciones*\n"
+            menu_text += f"🎼 *Ediciones especiales*\n"
+            menu_text += f"🌍 *De todo el mundo*\n\n"
+            menu_text += f"{MINI_SEP}\n\n"
+            menu_text += f"📝 *Ejemplos:*\n"
+            menu_text += f"   • `Metallica`\n"
+            menu_text += f"   • `Pink Floyd`\n"
+            menu_text += f"   • `Bad Bunny`\n"
+            menu_text += f"   • `Queen`"
+            
+            await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
         
         # Menú: Buscar álbumes
         if data == "menu_search_albums":
             self.user_searches[user_id] = {'state': 'waiting_albums'}
-            await query.edit_message_text(
-                "🐺 *BUSCAR ÁLBUMES* 📀\n\n"
-                "Escribe el nombre del álbum o artista para buscar álbumes completos.\n\n"
-                "Ejemplo: `The Wall Pink Floyd`, `Thriller`, `Un Verano Sin Ti`\n\n"
-                "_Se buscarán álbumes completos de cualquier artista._",
-                parse_mode='Markdown'
-            )
+            menu_text = f"╔═══════════════════════════════╗\n"
+            menu_text += f"║  📀 *BUSCAR ÁLBUMES* 📀  ║\n"
+            menu_text += f"╚═══════════════════════════════╝\n\n"
+            menu_text += f"🎼 Escribe el nombre del álbum o\n"
+            menu_text += f"   artista para buscar álbumes\n"
+            menu_text += f"   COMPLETOS.\n\n"
+            menu_text += f"✨ *Álbumes completos*\n"
+            menu_text += f"🌍 *De cualquier artista del mundo*\n"
+            menu_text += f"🎵 *Resultados ilimitados*\n\n"
+            menu_text += f"{MINI_SEP}\n\n"
+            menu_text += f"📝 *Ejemplos:*\n"
+            menu_text += f"   • `The Wall Pink Floyd`\n"
+            menu_text += f"   • `Thriller Michael Jackson`\n"
+            menu_text += f"   • `Un Verano Sin Ti`\n"
+            menu_text += f"   • `Abbey Road`"
+            
+            await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
         
         # Menú: Crear playlist
@@ -647,20 +828,26 @@ class MusicBot:
             
             self.user_searches[user_id] = {'state': 'waiting_playlist_song'}
             
-            playlist_text = "🐺 *CREAR PLAYLIST* 📝\n\n"
-            if self.user_playlists[user_id]:
-                playlist_text += "*Tu playlist actual:*\n"
-                for i, song in enumerate(self.user_playlists[user_id], 1):
-                    playlist_text += f"{i}. {song['title']} - {song['artist']}\n"
-                playlist_text += "\n"
+            playlist_text = f"╔═══════════════════════════════╗\n"
+            playlist_text += f"║  📝 *CREAR PLAYLIST* 📝  ║\n"
+            playlist_text += f"╚═══════════════════════════════╝\n\n"
             
-            playlist_text += "Escribe el nombre de una canción para agregar a tu playlist."
+            if self.user_playlists[user_id]:
+                playlist_text += f"🎵 *Tu playlist actual:*\n"
+                playlist_text += f"{MINI_SEP}\n"
+                for i, song in enumerate(self.user_playlists[user_id], 1):
+                    playlist_text += f"{i}. ♪ {song['title'][:30]}\n"
+                    playlist_text += f"   👤 {song['artist'][:25]}\n\n"
+                playlist_text += f"{MINI_SEP}\n\n"
+            
+            playlist_text += f"✏️ Escribe el nombre de una\n"
+            playlist_text += f"   canción para agregar."
             
             keyboard = []
             if self.user_playlists[user_id]:
                 keyboard.append([InlineKeyboardButton("✅ Finalizar Playlist", callback_data="playlist_finish")])
                 keyboard.append([InlineKeyboardButton("🗑️ Borrar Playlist", callback_data="playlist_clear")])
-            keyboard.append([InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")])
+            keyboard.append([InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")])
             
             await query.edit_message_text(
                 playlist_text,
@@ -669,22 +856,74 @@ class MusicBot:
             )
             return
         
+        # Menú: Info del bot
+        if data == "menu_info":
+            keyboard = [[InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")]]
+            
+            info_text = f"╔═══════════════════════════════╗\n"
+            info_text += f"║  ℹ️ *INFO DEL BOT* ℹ️  ║\n"
+            info_text += f"╚═══════════════════════════════╝\n\n"
+            info_text += f"🐺 *Bot Musical Veronica*\n"
+            info_text += f"📱 Versión 2.0 Premium\n\n"
+            info_text += f"{MINI_SEP}\n\n"
+            info_text += f"✨ *Características:*\n"
+            info_text += f"   • Búsqueda ilimitada\n"
+            info_text += f"   • Descargas MP3 HD\n"
+            info_text += f"   • Karaokes sin límite\n"
+            info_text += f"   • Discografías completas\n"
+            info_text += f"   • Álbumes del mundo\n"
+            info_text += f"   • Playlists personalizadas\n\n"
+            info_text += f"⚡ *Velocidad:* Ultra rápida\n"
+            info_text += f"🌍 *Alcance:* Mundial\n"
+            info_text += f"💾 *Calidad:* 192kbps MP3\n\n"
+            info_text += f"{SEPARATOR}\n"
+            info_text += f"🐺 Creado con ❤️ para melómanos"
+            
+            await query.edit_message_text(
+                info_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            return
+        
         # Menú: Ayuda
         if data == "menu_help":
-            keyboard = [[InlineKeyboardButton("🔙 Volver al Menú", callback_data="back_to_main_menu")]]
+            keyboard = [[InlineKeyboardButton("🏠 Volver al Menú", callback_data="back_to_main_menu")]]
+            
+            help_text = f"╔═══════════════════════════════╗\n"
+            help_text += f"║  ❓ *GUÍA DE USO* ❓  ║\n"
+            help_text += f"╚═══════════════════════════════╝\n\n"
+            
+            help_text += f"┌─────────────────────────┐\n"
+            help_text += f"│  🎵 *BUSCAR CANCIONES*  │\n"
+            help_text += f"└─────────────────────────┘\n"
+            help_text += f"Busca canciones ilimitadas.\n"
+            help_text += f"📝 `Bad Bunny`, `Tusa`\n\n"
+            
+            help_text += f"┌─────────────────────────┐\n"
+            help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
+            help_text += f"└─────────────────────────┘\n"
+            help_text += f"Versiones instrumentales.\n"
+            help_text += f"📝 `Bohemian Rhapsody`\n\n"
+            
+            help_text += f"┌─────────────────────────┐\n"
+            help_text += f"│ 💿 *DISCOGRAFÍAS*│\n"
+            help_text += f"└─────────────────────────┘\n"
+            help_text += f"Toda la discografía completa.\n"
+            help_text += f"📝 `Metallica`, `Queen`\n\n"
+            
+            help_text += f"┌─────────────────────────┐\n"
+            help_text += f"│  📀 *ÁLBUMES*    │\n"
+            help_text += f"└─────────────────────────┘\n"
+            help_text += f"Álbumes completos del mundo.\n"
+            help_text += f"📝 `The Wall`, `Thriller`\n\n"
+            
+            help_text += f"{SEPARATOR}\n\n"
+            help_text += f"⚡ *Límite:* 20 búsquedas/min\n"
+            help_text += f"💾 *Formato:* MP3 HD"
+            
             await query.edit_message_text(
-                "🐺 *GUÍA DE USO*\n\n"
-                "*🎵 Buscar Canciones:*\n"
-                "Busca por nombre o artista. Muestra TODOS los resultados.\n\n"
-                "*🎤 Buscar Karaokes:*\n"
-                "Busca versiones karaoke.\n\n"
-                "*💿 Buscar Discografías:*\n"
-                "Busca TODA la discografía de un artista o grupo.\n\n"
-                "*📀 Buscar Álbumes:*\n"
-                "Busca álbumes completos específicos.\n\n"
-                "*📝 Crear Playlist:*\n"
-                "Crea tu lista personalizada.\n\n"
-                "*Límites:* 20 búsquedas/minuto",
+                help_text,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -697,7 +936,7 @@ class MusicBot:
             page = int(parts[2])
             
             if user_id not in self.user_searches:
-                await query.edit_message_text("🐺 Búsqueda expirada.")
+                await query.edit_message_text("⏰ Búsqueda expirada.")
                 return
             
             user_data = self.user_searches[user_id]
@@ -706,7 +945,8 @@ class MusicBot:
             keyboard = self.create_results_keyboard(results, page=page, search_type=search_type)
             
             await query.edit_message_text(
-                f"🐺 *Resultados* (página {page+1}):\n\nSelecciona una opción:",
+                f"📄 *Resultados* (página {page+1})\n\n"
+                f"👇 Selecciona una opción:",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -719,14 +959,14 @@ class MusicBot:
             idx = int(parts[2])
             
             if user_id not in self.user_searches:
-                await query.edit_message_text("🐺 Búsqueda expirada.")
+                await query.edit_message_text("⏰ Búsqueda expirada.")
                 return
             
             user_data = self.user_searches[user_id]
             
             if datetime.now() - user_data['timestamp'] > timedelta(minutes=15):
                 del self.user_searches[user_id]
-                await query.edit_message_text("🐺 Búsqueda expirada.")
+                await query.edit_message_text("⏰ Búsqueda expirada.")
                 return
             
             selected = user_data['results'][idx]
@@ -754,14 +994,21 @@ class MusicBot:
                 keyboard = [
                     [InlineKeyboardButton("➕ Agregar otra canción", callback_data="menu_create_playlist")],
                     [InlineKeyboardButton("✅ Finalizar Playlist", callback_data="playlist_finish")],
-                    [InlineKeyboardButton("🔙 Menú Principal", callback_data="back_to_main_menu")]
+                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
                 ]
                 
+                success_text = f"╔═══════════════════════════════╗\n"
+                success_text += f"║  ✅ *AGREGADO A PLAYLIST* ✅  ║\n"
+                success_text += f"╚═══════════════════════════════╝\n\n"
+                success_text += f"🎵 *Canción:*\n"
+                success_text += f"   {title[:40]}\n\n"
+                success_text += f"👤 *Artista:*\n"
+                success_text += f"   {artist[:40]}\n\n"
+                success_text += f"{MINI_SEP}\n"
+                success_text += f"📝 *Total en playlist:* {len(self.user_playlists[user_id])} canciones"
+                
                 await query.edit_message_text(
-                    f"✅ *Agregado a tu playlist:*\n\n"
-                    f"🎵 {title}\n"
-                    f"👤 {artist}\n\n"
-                    f"*Total en playlist:* {len(self.user_playlists[user_id])} canciones",
+                    success_text,
                     reply_markup=InlineKeyboardMarkup(keyboard),
                     parse_mode='Markdown'
                 )
@@ -773,17 +1020,27 @@ class MusicBot:
             
             # Opciones
             keyboard = [
-                [InlineKeyboardButton("🔗 Ver enlace", callback_data=f"link_{idx}")],
-                [InlineKeyboardButton("⬇️ Descargar MP3", callback_data=f"download_{idx}")],
-                [InlineKeyboardButton("🔙 Volver a resultados", callback_data="back_to_results")],
+                [
+                    InlineKeyboardButton("🔗 Ver Enlace", callback_data=f"link_{idx}"),
+                    InlineKeyboardButton("⬇️ Descargar", callback_data=f"download_{idx}")
+                ],
+                [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
             
+            detail_text = f"╔═══════════════════════════════╗\n"
+            detail_text += f"║  {icon} *DETALLES* {icon}  ║\n"
+            detail_text += f"╚═══════════════════════════════╝\n\n"
+            detail_text += f"🎵 *Título:*\n"
+            detail_text += f"   {title[:50]}\n\n"
+            detail_text += f"👤 *Artista:*\n"
+            detail_text += f"   {artist[:50]}\n\n"
+            detail_text += f"⏱️ *Duración:* {duration_str}\n\n"
+            detail_text += f"{MINI_SEP}\n"
+            detail_text += f"👇 *¿Qué quieres hacer?*"
+            
             await query.edit_message_text(
-                f"🐺{icon} *{title}*\n"
-                f"👤 {artist}\n"
-                f"⏱️ Duración: {duration_str}\n\n"
-                "¿Qué quieres hacer?",
+                detail_text,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -792,28 +1049,44 @@ class MusicBot:
         # Enviar enlace
         if data.startswith("link_"):
             if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
-                await query.edit_message_text("🐺 Error.")
+                await query.edit_message_text("❌ Error.")
                 return
             
             selected = self.user_searches[user_id]['selected']
-            await query.message.reply_text(
-                f"🐺🎵 *{selected['title']}*\n"
-                f"👤 {selected['artist']}\n\n"
-                f"🔗 {selected['url']}\n\n"
-                "¡Disfruta! 💕",
-                parse_mode='Markdown'
-            )
-            await query.edit_message_text("🐺 ¡Enlace enviado! 🎵")
+            
+            link_text = f"╔═══════════════════════════════╗\n"
+            link_text += f"║  🔗 *ENLACE GENERADO* 🔗  ║\n"
+            link_text += f"╚═══════════════════════════════╝\n\n"
+            link_text += f"🎵 *Título:*\n"
+            link_text += f"   {selected['title'][:50]}\n\n"
+            link_text += f"👤 *Artista:*\n"
+            link_text += f"   {selected['artist'][:50]}\n\n"
+            link_text += f"{MINI_SEP}\n\n"
+            link_text += f"🔗 *Enlace:*\n"
+            link_text += f"{selected['url']}\n\n"
+            link_text += f"{SEPARATOR}\n"
+            link_text += f"🐺 ¡Disfruta tu música! 💕"
+            
+            await query.message.reply_text(link_text, parse_mode='Markdown')
+            await query.edit_message_text("✅ ¡Enlace enviado! 🎵")
             return
         
         # Descargar audio
         if data.startswith("download_"):
             if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
-                await query.edit_message_text("🐺 Error.")
+                await query.edit_message_text("❌ Error.")
                 return
             
             selected = self.user_searches[user_id]['selected']
-            await query.edit_message_text("🐺 ⬇️ Descargando audio...")
+            
+            download_text = f"╔═══════════════════════════════╗\n"
+            download_text += f"║  ⬇️ *DESCARGANDO...* ⬇️  ║\n"
+            download_text += f"╚═══════════════════════════════╝\n\n"
+            download_text += f"🎵 {selected['title'][:40]}\n\n"
+            download_text += f"⏳ Esto puede tardar un momento...\n"
+            download_text += f"🐺 Preparando tu MP3 HD..."
+            
+            await query.edit_message_text(download_text, parse_mode='Markdown')
             
             try:
                 filename, title = await asyncio.wait_for(
@@ -823,13 +1096,25 @@ class MusicBot:
                 
                 if filename and os.path.exists(filename):
                     with open(filename, 'rb') as audio_file:
+                        caption = f"🐺🎵 *{title[:50]}*\n\n"
+                        caption += f"💾 Formato: MP3 HD\n"
+                        caption += f"✅ Descargado exitosamente\n"
+                        caption += f"🐺 ¡Disfruta! 💕"
+                        
                         await query.message.reply_audio(
                             audio=audio_file,
                             title=title,
-                            caption=f"🐺🎵 *{title}*\n\n¡Disfruta! 💕",
+                            caption=caption,
                             parse_mode='Markdown'
                         )
-                    await query.message.reply_text("🐺 ¡Audio enviado! 🎵")
+                    
+                    await query.message.reply_text(
+                        "╔═══════════════════════════════╗\n"
+                        "║  ✅ *DESCARGA COMPLETA* ✅  ║\n"
+                        "╚═══════════════════════════════╝\n\n"
+                        "🎵 ¡Tu audio ha sido enviado!\n"
+                        "🐺 ¡Que lo disfrutes! 💕"
+                    )
                     
                     try:
                         os.remove(filename)
@@ -837,19 +1122,23 @@ class MusicBot:
                         pass
                 else:
                     await query.message.reply_text(
-                        f"🐺 No pude descargar. Enlace:\n\n🔗 {selected['url']}"
+                        f"😔 No pude descargar el archivo.\n\n"
+                        f"🔗 Pero aquí está el enlace:\n"
+                        f"{selected['url']}"
                     )
             except Exception as e:
                 logger.error(f"Error descarga: {e}")
                 await query.message.reply_text(
-                    f"🐺 Error al descargar:\n\n🔗 {selected['url']}"
+                    f"❌ Error al descargar.\n\n"
+                    f"🔗 Enlace directo:\n"
+                    f"{selected['url']}"
                 )
             return
         
         # Volver a resultados
         if data == "back_to_results":
             if user_id not in self.user_searches:
-                await query.edit_message_text("🐺 Búsqueda expirada.")
+                await query.edit_message_text("⏰ Búsqueda expirada.")
                 return
             
             user_data = self.user_searches[user_id]
@@ -860,7 +1149,8 @@ class MusicBot:
             keyboard = self.create_results_keyboard(results, page=page, search_type=search_type)
             
             await query.edit_message_text(
-                f"🐺 *Resultados:* {user_data['query']}\n\nSelecciona:",
+                f"🔍 *Búsqueda:* {user_data['query']}\n\n"
+                f"👇 Selecciona una opción:",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -869,16 +1159,27 @@ class MusicBot:
         # Finalizar playlist
         if data == "playlist_finish":
             if user_id not in self.user_playlists or not self.user_playlists[user_id]:
-                await query.edit_message_text("🐺 Tu playlist está vacía.")
+                await query.edit_message_text("😔 Tu playlist está vacía.")
                 return
             
-            playlist_text = "🐺 *TU PLAYLIST ESTÁ LISTA* 📝✅\n\n"
+            playlist_text = f"╔═══════════════════════════════╗\n"
+            playlist_text += f"║  ✅ *PLAYLIST COMPLETA* ✅  ║\n"
+            playlist_text += f"╚═══════════════════════════════╝\n\n"
+            playlist_text += f"🎵 *Tu Playlist Personal*\n"
+            playlist_text += f"📝 Total: {len(self.user_playlists[user_id])} canciones\n\n"
+            playlist_text += f"{SEPARATOR}\n\n"
+            
             for i, song in enumerate(self.user_playlists[user_id], 1):
-                playlist_text += f"{i}. 🎵 {song['title']}\n   👤 {song['artist']}\n   🔗 {song['url']}\n\n"
+                playlist_text += f"*{i}.* 🎵 {song['title'][:35]}\n"
+                playlist_text += f"    👤 {song['artist'][:30]}\n"
+                playlist_text += f"    🔗 {song['url']}\n\n"
+            
+            playlist_text += f"{SEPARATOR}\n"
+            playlist_text += f"🐺 ¡Disfruta tu playlist! 💕"
             
             keyboard = [
                 [InlineKeyboardButton("🗑️ Borrar Playlist", callback_data="playlist_clear")],
-                [InlineKeyboardButton("🔙 Menú Principal", callback_data="back_to_main_menu")]
+                [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
             
             await query.edit_message_text(
@@ -893,10 +1194,18 @@ class MusicBot:
             if user_id in self.user_playlists:
                 self.user_playlists[user_id] = []
             
-            keyboard = [[InlineKeyboardButton("🔙 Menú Principal", callback_data="back_to_main_menu")]]
+            keyboard = [[InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]]
+            
+            clear_text = f"╔═══════════════════════════════╗\n"
+            clear_text += f"║  🗑️ *PLAYLIST BORRADA* 🗑️  ║\n"
+            clear_text += f"╚═══════════════════════════════╝\n\n"
+            clear_text += f"✅ Tu playlist ha sido eliminada.\n"
+            clear_text += f"🐺 Puedes crear una nueva cuando quieras."
+            
             await query.edit_message_text(
-                "🐺 Playlist borrada correctamente.",
-                reply_markup=InlineKeyboardMarkup(keyboard)
+                clear_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
             )
             return
     
@@ -907,7 +1216,13 @@ class MusicBot:
         try:
             if update and update.effective_message:
                 await update.effective_message.reply_text(
-                    "🐺 Ocurrió un error. Intenta de nuevo."
+                    "╔═══════════════════════════════╗\n"
+                    "║  ⚠️ *ERROR* ⚠️  ║\n"
+                    "╚═══════════════════════════════╝\n\n"
+                    "😔 Ocurrió un error inesperado.\n"
+                    "🐺 Por favor, intenta de nuevo.\n\n"
+                    "💡 Usa /start para volver al menú.",
+                    parse_mode='Markdown'
                 )
         except:
             pass
@@ -915,7 +1230,9 @@ class MusicBot:
 
 def main():
     """Función principal"""
-    logger.info("🐺 Iniciando bot musical...")
+    logger.info("╔═══════════════════════════════════╗")
+    logger.info("║  🐺 INICIANDO BOT MUSICAL 🐺  ║")
+    logger.info("╚═══════════════════════════════════╝")
     
     bot = MusicBot()
     app = Application.builder().token(TOKEN).build()
@@ -926,8 +1243,9 @@ def main():
     app.add_handler(CallbackQueryHandler(bot.handle_callback))
     app.add_error_handler(bot.error_handler)
     
-    logger.info("🐺 Bot iniciado correctamente")
-    logger.info("🐺 Presiona Ctrl+C para detener")
+    logger.info("✅ Bot iniciado correctamente")
+    logger.info("🐺 Bot Musical Veronica activo")
+    logger.info("⏹️ Presiona Ctrl+C para detener")
     
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
 
