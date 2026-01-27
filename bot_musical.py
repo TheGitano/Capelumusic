@@ -877,7 +877,7 @@ class MusicBot:
             info_text += f"🌍 *Alcance:* Mundial\n"
             info_text += f"💾 *Calidad:* 192kbps MP3\n\n"
             info_text += f"{SEPARATOR}\n"
-            info_text += f"🐺 Creado con ❤️ para melómanos"
+            info_text += f"🖤🐺 𝕯𝖊 𝖙𝖚 𝕷𝖔𝖇𝖔🔥 𝖈𝖔𝖓 𝖆𝖒𝖔𝖗 𝖞 𝖕𝖆𝖘𝖎𝖔́𝖓 🔥🤘⚡ 𝕍𝖊𝖗𝖔́𝖓𝖎𝖈𝖆 𝔸𝖑𝖊𝖏𝖆𝖓𝖉𝖗𝖆 𝕽𝖔𝖏𝖆𝖘 ⚡🤘" 
             
             await query.edit_message_text(
                 info_text,
@@ -1252,3 +1252,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
