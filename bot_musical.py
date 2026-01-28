@@ -1151,36 +1151,29 @@ class MusicBot:
                     except:
                         pass
                 else:
-                    # Si no se pudo descargar, enviar enlace como alternativa
-                    link_text = f"╔═══════════════════════════════╗\n"
-                    link_text += f"║  ⚠️ *NO PUDE DESCARGAR* ⚠️  ║\n"
-                    link_text += f"╚═══════════════════════════════╝\n\n"
-                    link_text += f"🎵 *Título:*\n"
-                    link_text += f"   {selected['title'][:50]}\n\n"
-                    link_text += f"👤 *Artista:*\n"
-                    link_text += f"   {selected['artist'][:50]}\n\n"
-                    link_text += f"{MINI_SEP}\n\n"
-                    link_text += f"💡 Pero puedes reproducirlo aquí:\n\n"
-                    # Link oculto - muestra "▶️ REPRODUCIR" pero lleva al URL
-                    link_text += f"👉 [▶️ REPRODUCIR ]({selected['url']})\n\n"
-                    link_text += f"{SEPARATOR}\n"
-                    link_text += f"🐺 ¡Solo toca el botón! 💕"
-                    
+                    # Si no se pudo descargar, mostrar botón directo a YouTube
                     keyboard = [
+                        [InlineKeyboardButton("▶️ REPRODUCIR ", url=selected['url'])],
                         [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
                         [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                         [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
                     ]
                     
-                    await query.message.reply_text(
-                        link_text,
-                        reply_markup=InlineKeyboardMarkup(keyboard),
-                        parse_mode='Markdown',
-                        disable_web_page_preview=True  # Evita que muestre preview del video
-                    )
+                    warning_text = f"╔═══════════════════════════════╗\n"
+                    warning_text += f"║  ⚠️ *NO PUDE DESCARGAR* ⚠️  ║\n"
+                    warning_text += f"╚═══════════════════════════════╝\n\n"
+                    warning_text += f"🎵 *Título:*\n"
+                    warning_text += f"   {selected['title'][:50]}\n\n"
+                    warning_text += f"👤 *Artista:*\n"
+                    warning_text += f"   {selected['artist'][:50]}\n\n"
+                    warning_text += f"{MINI_SEP}\n\n"
+                    warning_text += f"💡 Pero puedes reproducirlo aquí:\n"
+                    warning_text += f"👇 *Presiona el botón de abajo*\n\n"
+                    warning_text += f"🐺 ¡Solo toca el botón! 💕"
                     
                     await query.edit_message_text(
-                        "✅ Enlace enviado abajo",
+                        warning_text,
+                        reply_markup=InlineKeyboardMarkup(keyboard),
                         parse_mode='Markdown'
                     )
                     
