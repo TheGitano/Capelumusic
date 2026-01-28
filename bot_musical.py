@@ -330,9 +330,10 @@ class MusicBot:
         return all_results
     
     async def download_audio(self, url: str, user_id: int):
-        """Descarga audio de YouTube"""
+        """Descarga audio de YouTube con múltiples intentos"""
         output_path = os.path.join(self.download_folder, f"{user_id}_%(title)s.%(ext)s")
         
+        # Intentar primero con mejor calidad
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': output_path,
@@ -341,22 +342,45 @@ class MusicBot:
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'quiet': True,
-            'no_warnings': True,
+            'quiet': False,  # Cambiado para ver errores
+            'no_warnings': False,  # Ver advertencias
             'max_filesize': 50 * 1024 * 1024,
             'socket_timeout': 60,
             'no_check_certificate': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            },
         }
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                logger.info(f"Descargando: {url}")
+                logger.info(f"🎵 Descargando: {url}")
                 info = ydl.extract_info(url, download=True)
+                
+                if not info:
+                    logger.error("❌ No se pudo obtener info del video")
+                    return None, None
+                
+                # Buscar el archivo descargado
                 filename = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'
-                return filename, info.get('title', 'Audio')
+                
+                logger.info(f"✅ Archivo generado: {filename}")
+                
+                # Verificar que el archivo existe
+                if os.path.exists(filename):
+                    file_size = os.path.getsize(filename)
+                    logger.info(f"✅ Archivo existe, tamaño: {file_size} bytes")
+                    return filename, info.get('title', 'Audio')
+                else:
+                    logger.error(f"❌ Archivo no existe: {filename}")
+                    return None, None
+                    
+        except yt_dlp.utils.DownloadError as e:
+            logger.error(f"❌ Error de descarga de yt-dlp: {e}")
+            return None, None
         except Exception as e:
-            logger.error(f"Error en descarga: {e}")
+            logger.error(f"❌ Error general en descarga: {type(e).__name__}: {e}")
             return None, None
     
     def create_results_keyboard(self, results, page=0, results_per_page=10, search_type="normal"):
