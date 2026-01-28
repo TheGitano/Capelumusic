@@ -774,9 +774,10 @@ class MusicBot:
             menu_text += f"🌍 *De todo el mundo*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Bad Bunny`\n"
-            menu_text += f"   • `Monaco Bad Bunny`\n"
-            menu_text += f"   • `Shakira Waka Waka`"
+            menu_text += f"   • `Marco Antonio Solis`\n"
+            menu_text += f"   • `Juan Luis Guerra`\n"
+            menu_text += f"   • `Rocio Durcal`"
+            menu_text += f"   • `Ana Gabriel`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -793,9 +794,9 @@ class MusicBot:
             menu_text += f"🎵 *Versiones instrumentales*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Bohemian Rhapsody`\n"
-            menu_text += f"   • `The Weeknd Blinding Lights`\n"
-            menu_text += f"   • `Luis Miguel`"
+            menu_text += f"   • `Gloria Trevi Dr. Psiquiatra`\n"
+            menu_text += f"   • `Raphael Como yo te amo`\n"
+            menu_text += f"   • `Air Supply Goodbye`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -817,8 +818,8 @@ class MusicBot:
             menu_text += f"📝 *Ejemplos:*\n"
             menu_text += f"   • `Metallica`\n"
             menu_text += f"   • `Pink Floyd`\n"
-            menu_text += f"   • `Bad Bunny`\n"
-            menu_text += f"   • `Queen`"
+            menu_text += f"   • `ACDC`\n"
+            menu_text += f"   • `IRON MAIDEN`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -837,10 +838,10 @@ class MusicBot:
             menu_text += f"🎵 *Resultados ilimitados*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `The Wall Pink Floyd`\n"
-            menu_text += f"   • `Thriller Michael Jackson`\n"
-            menu_text += f"   • `Un Verano Sin Ti`\n"
-            menu_text += f"   • `Abbey Road`"
+            menu_text += f"   • `Vilma Palma E Vampiros 3980`\n"
+            menu_text += f"   • `Luis Miguel Soy Como Quiero Ser`\n"
+            menu_text += f"   • `Patricio Rey y Sus Redonditos de Ricota La Mosca Y La Sopa`\n"
+            menu_text += f"   • `Franco Simone Italia 77`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
