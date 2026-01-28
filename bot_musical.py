@@ -1091,19 +1091,23 @@ class MusicBot:
             link_text += f"{SEPARATOR}\n"
             link_text += f"🐺 ¡Disfruta tu música! 💕"
             
-            await query.message.reply_text(link_text, parse_mode='Markdown')
-            
             # Botones después de enviar enlace
             keyboard = [
-                [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_from_link")],
+                [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
             
-            await query.edit_message_text(
-                "✅ ¡Enlace enviado! 🎵\n\n"
-                "👇 ¿Qué quieres hacer ahora?",
+            # Enviar el enlace CON los botones directamente
+            await query.message.reply_text(
+                link_text, 
                 reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            
+            # Actualizar el mensaje anterior para indicar que se envió
+            await query.edit_message_text(
+                "✅ ¡Enlace enviado abajo! 🎵",
                 parse_mode='Markdown'
             )
             return
@@ -1144,6 +1148,13 @@ class MusicBot:
                 )
                 
                 if filename and os.path.exists(filename):
+                    # Botones para el mensaje del audio
+                    keyboard = [
+                        [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_download")],
+                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                    ]
+                    
                     with open(filename, 'rb') as audio_file:
                         caption = f"🐺🎵 *{title[:50]}*\n\n"
                         caption += f"💾 Formato: MP3 HD\n"
@@ -1154,24 +1165,13 @@ class MusicBot:
                             audio=audio_file,
                             title=title,
                             caption=caption,
-                            parse_mode='Markdown'
+                            parse_mode='Markdown',
+                            reply_markup=InlineKeyboardMarkup(keyboard)
                         )
                     
-                    # Botones después de enviar descarga
-                    keyboard = [
-                        [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_from_download")],
-                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
-                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
-                    ]
-                    
+                    # Actualizar mensaje anterior
                     await query.edit_message_text(
-                        "╔═══════════════════════════════╗\n"
-                        "║  ✅ *DESCARGA COMPLETA* ✅  ║\n"
-                        "╚═══════════════════════════════╝\n\n"
-                        "🎵 ¡Tu audio ha sido enviado!\n"
-                        "🐺 ¡Que lo disfrutes! 💕\n\n"
-                        "👇 ¿Qué quieres hacer ahora?",
-                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        "✅ ¡Audio enviado abajo! 🎵",
                         parse_mode='Markdown'
                     )
                     
