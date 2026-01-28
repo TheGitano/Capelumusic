@@ -1153,18 +1153,18 @@ class MusicBot:
                 else:
                     # Si no se pudo descargar, enviar enlace como alternativa
                     link_text = f"╔═══════════════════════════════╗\n"
-                    link_text += f"║  🔗 *ENLACE DE YOUTUBE* 🔗  ║\n"
+                    link_text += f"║  ⚠️ *NO PUDE DESCARGAR* ⚠️  ║\n"
                     link_text += f"╚═══════════════════════════════╝\n\n"
-                    link_text += f"⚠️ No pude reproducir directamente\n\n"
                     link_text += f"🎵 *Título:*\n"
                     link_text += f"   {selected['title'][:50]}\n\n"
                     link_text += f"👤 *Artista:*\n"
                     link_text += f"   {selected['artist'][:50]}\n\n"
                     link_text += f"{MINI_SEP}\n\n"
-                    link_text += f"🔗 *Enlace:*\n"
-                    link_text += f"{selected['url']}\n\n"
+                    link_text += f"💡 Pero puedes reproducirlo aquí:\n\n"
+                    # Link oculto - muestra "▶️ REPRODUCIR" pero lleva al URL
+                    link_text += f"👉 [▶️ REPRODUCIR ]({selected['url']})\n\n"
                     link_text += f"{SEPARATOR}\n"
-                    link_text += f"🐺 Ábrelo en YouTube 💕"
+                    link_text += f"🐺 ¡Solo toca el botón! 💕"
                     
                     keyboard = [
                         [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
@@ -1175,7 +1175,8 @@ class MusicBot:
                     await query.message.reply_text(
                         link_text,
                         reply_markup=InlineKeyboardMarkup(keyboard),
-                        parse_mode='Markdown'
+                        parse_mode='Markdown',
+                        disable_web_page_preview=True  # Evita que muestre preview del video
                     )
                     
                     await query.edit_message_text(
