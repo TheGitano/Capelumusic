@@ -24,8 +24,8 @@ if not TOKEN:
 # Logo mejorado del bot
 LOGO = """
 ╔═══════════════════════════════════╗
-║  🐺    Capelu Musical    🐺  ║
-║♪♫ Soy tu Lobo Asistente Musical  ♫♪   ║
+║  🐺    BOT MUSICAL VERONICA    🐺  ║
+║     ♪♫  Tu Asistente Musical  ♫♪   ║
 ║          🎵 🎶 🎸 🎹 🎤           ║
 ╚═══════════════════════════════════╝
 """
@@ -877,7 +877,7 @@ class MusicBot:
             info_text += f"🌍 *Alcance:* Mundial\n"
             info_text += f"💾 *Calidad:* 192kbps MP3\n\n"
             info_text += f"{SEPARATOR}\n"
-            info_text += f"🖤🐺 𝕯𝖊 𝖙𝖚 𝕷𝖔𝖇𝖔🔥 𝖈𝖔𝖓 𝖆𝖒𝖔𝖗 𝖞 𝖕𝖆𝖘𝖎𝖔́𝖓 🔥🤘⚡ 𝕍𝖊𝖗𝖔́𝖓𝖎𝖈𝖆 𝔸𝖑𝖊𝖏𝖆𝖓𝖉𝖗𝖆 𝕽𝖔𝖏𝖆𝖘 ⚡🤘" 
+            info_text += f"🐺 Creado con ❤️ para melómanos"
             
             await query.edit_message_text(
                 info_text,
@@ -1018,12 +1018,24 @@ class MusicBot:
             duration_str = self.format_duration(duration)
             icon = "💿" if search_type == "discography" else "📀" if search_type == "albums" else "🎵"
             
-            # Opciones
+            # Determinar tipo de contenido para el texto
+            content_type = ""
+            if search_type == "discography":
+                content_type = "discografía"
+            elif search_type == "albums":
+                content_type = "álbum"
+            elif search_type == "karaoke":
+                content_type = "karaoke"
+            else:
+                content_type = "canción"
+            
+            # Opciones con botón de agregar a playlist
             keyboard = [
                 [
                     InlineKeyboardButton("🔗 Ver Enlace", callback_data=f"link_{idx}"),
                     InlineKeyboardButton("⬇️ Descargar", callback_data=f"download_{idx}")
                 ],
+                [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_{idx}")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
@@ -1053,6 +1065,18 @@ class MusicBot:
                 return
             
             selected = self.user_searches[user_id]['selected']
+            search_type = self.user_searches[user_id].get('search_type', 'songs')
+            
+            # Determinar tipo de contenido
+            content_type = ""
+            if search_type == "discography":
+                content_type = "discografía"
+            elif search_type == "albums":
+                content_type = "álbum"
+            elif search_type == "karaoke":
+                content_type = "karaoke"
+            else:
+                content_type = "canción"
             
             link_text = f"╔═══════════════════════════════╗\n"
             link_text += f"║  🔗 *ENLACE GENERADO* 🔗  ║\n"
@@ -1068,7 +1092,20 @@ class MusicBot:
             link_text += f"🐺 ¡Disfruta tu música! 💕"
             
             await query.message.reply_text(link_text, parse_mode='Markdown')
-            await query.edit_message_text("✅ ¡Enlace enviado! 🎵")
+            
+            # Botones después de enviar enlace
+            keyboard = [
+                [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_from_link")],
+                [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+            ]
+            
+            await query.edit_message_text(
+                "✅ ¡Enlace enviado! 🎵\n\n"
+                "👇 ¿Qué quieres hacer ahora?",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
             return
         
         # Descargar audio
@@ -1078,6 +1115,18 @@ class MusicBot:
                 return
             
             selected = self.user_searches[user_id]['selected']
+            search_type = self.user_searches[user_id].get('search_type', 'songs')
+            
+            # Determinar tipo de contenido
+            content_type = ""
+            if search_type == "discography":
+                content_type = "discografía"
+            elif search_type == "albums":
+                content_type = "álbum"
+            elif search_type == "karaoke":
+                content_type = "karaoke"
+            else:
+                content_type = "canción"
             
             download_text = f"╔═══════════════════════════════╗\n"
             download_text += f"║  ⬇️ *DESCARGANDO...* ⬇️  ║\n"
@@ -1108,12 +1157,22 @@ class MusicBot:
                             parse_mode='Markdown'
                         )
                     
-                    await query.message.reply_text(
+                    # Botones después de enviar descarga
+                    keyboard = [
+                        [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_from_download")],
+                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                    ]
+                    
+                    await query.edit_message_text(
                         "╔═══════════════════════════════╗\n"
                         "║  ✅ *DESCARGA COMPLETA* ✅  ║\n"
                         "╚═══════════════════════════════╝\n\n"
                         "🎵 ¡Tu audio ha sido enviado!\n"
-                        "🐺 ¡Que lo disfrutes! 💕"
+                        "🐺 ¡Que lo disfrutes! 💕\n\n"
+                        "👇 ¿Qué quieres hacer ahora?",
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        parse_mode='Markdown'
                     )
                     
                     try:
@@ -1121,17 +1180,27 @@ class MusicBot:
                     except:
                         pass
                 else:
-                    await query.message.reply_text(
+                    keyboard = [
+                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                    ]
+                    await query.edit_message_text(
                         f"😔 No pude descargar el archivo.\n\n"
                         f"🔗 Pero aquí está el enlace:\n"
-                        f"{selected['url']}"
+                        f"{selected['url']}",
+                        reply_markup=InlineKeyboardMarkup(keyboard)
                     )
             except Exception as e:
                 logger.error(f"Error descarga: {e}")
-                await query.message.reply_text(
+                keyboard = [
+                    [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                ]
+                await query.edit_message_text(
                     f"❌ Error al descargar.\n\n"
                     f"🔗 Enlace directo:\n"
-                    f"{selected['url']}"
+                    f"{selected['url']}",
+                    reply_markup=InlineKeyboardMarkup(keyboard)
                 )
             return
         
@@ -1208,6 +1277,166 @@ class MusicBot:
                 parse_mode='Markdown'
             )
             return
+        
+        # Agregar a playlist (desde el botón en detalles)
+        if data.startswith("add_to_playlist_"):
+            if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
+                await query.edit_message_text("❌ Error: No hay contenido seleccionado.")
+                return
+            
+            selected = self.user_searches[user_id]['selected']
+            search_type = self.user_searches[user_id].get('search_type', 'songs')
+            
+            # Determinar tipo de contenido
+            content_type = ""
+            if search_type == "discography":
+                content_type = "discografía"
+            elif search_type == "albums":
+                content_type = "álbum"
+            elif search_type == "karaoke":
+                content_type = "karaoke"
+            else:
+                content_type = "canción"
+            
+            # Verificar si tiene playlist, si no, ofrecer crear una
+            if user_id not in self.user_playlists or not self.user_playlists[user_id]:
+                # No tiene playlist, ofrecer crear una
+                keyboard = [
+                    [InlineKeyboardButton("✅ Sí, crear mi playlist", callback_data=f"create_playlist_and_add")],
+                    [InlineKeyboardButton("❌ No, volver", callback_data="back_to_results")],
+                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                ]
+                
+                guide_text = f"╔═══════════════════════════════╗\n"
+                guide_text += f"║  📝 *CREAR PLAYLIST* 📝  ║\n"
+                guide_text += f"╚═══════════════════════════════╝\n\n"
+                guide_text += f"🎵 Quieres agregar esta {content_type}:\n"
+                guide_text += f"   *{selected['title'][:40]}*\n\n"
+                guide_text += f"💡 *¡Aún no tienes una playlist!*\n\n"
+                guide_text += f"📝 Una playlist te permite:\n"
+                guide_text += f"   • Guardar tus canciones favoritas\n"
+                guide_text += f"   • Organizarlas en una lista\n"
+                guide_text += f"   • Acceder a ellas cuando quieras\n\n"
+                guide_text += f"{MINI_SEP}\n"
+                guide_text += f"❓ *¿Quieres crear tu playlist ahora?*"
+                
+                await query.edit_message_text(
+                    guide_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                return
+            else:
+                # Ya tiene playlist, agregar directamente
+                # Verificar si ya está en la playlist
+                is_duplicate = any(
+                    song['url'] == selected['url'] 
+                    for song in self.user_playlists[user_id]
+                )
+                
+                if is_duplicate:
+                    keyboard = [
+                        [InlineKeyboardButton("📝 Ver mi Playlist", callback_data="playlist_finish")],
+                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                    ]
+                    
+                    await query.edit_message_text(
+                        f"⚠️ *Ya está en tu playlist*\n\n"
+                        f"Esta {content_type} ya fue agregada anteriormente.\n\n"
+                        f"🎵 *{selected['title'][:40]}*\n"
+                        f"👤 {selected['artist'][:40]}",
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        parse_mode='Markdown'
+                    )
+                    return
+                
+                # Agregar a la playlist
+                self.user_playlists[user_id].append({
+                    'title': selected['title'],
+                    'artist': selected['artist'],
+                    'url': selected['url']
+                })
+                
+                keyboard = [
+                    [InlineKeyboardButton("➕ Agregar otra", callback_data="back_to_results")],
+                    [InlineKeyboardButton("📝 Ver mi Playlist", callback_data="playlist_finish")],
+                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+                ]
+                
+                success_text = f"╔═══════════════════════════════╗\n"
+                success_text += f"║  ✅ *AGREGADO A PLAYLIST* ✅  ║\n"
+                success_text += f"╚═══════════════════════════════╝\n\n"
+                success_text += f"🎵 *{content_type.capitalize()} agregada:*\n"
+                success_text += f"   {selected['title'][:40]}\n\n"
+                success_text += f"👤 *Artista:*\n"
+                success_text += f"   {selected['artist'][:40]}\n\n"
+                success_text += f"{MINI_SEP}\n"
+                success_text += f"📝 *Total en playlist:* {len(self.user_playlists[user_id])} canciones\n"
+                success_text += f"🐺 ¡Sigue agregando más!"
+                
+                await query.edit_message_text(
+                    success_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                return
+        
+        # Crear playlist y agregar el contenido seleccionado
+        if data == "create_playlist_and_add":
+            if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
+                await query.edit_message_text("❌ Error: No hay contenido seleccionado.")
+                return
+            
+            selected = self.user_searches[user_id]['selected']
+            search_type = self.user_searches[user_id].get('search_type', 'songs')
+            
+            # Determinar tipo de contenido
+            content_type = ""
+            if search_type == "discography":
+                content_type = "discografía"
+            elif search_type == "albums":
+                content_type = "álbum"
+            elif search_type == "karaoke":
+                content_type = "karaoke"
+            else:
+                content_type = "canción"
+            
+            # Crear la playlist con el primer elemento
+            self.user_playlists[user_id] = [{
+                'title': selected['title'],
+                'artist': selected['artist'],
+                'url': selected['url']
+            }]
+            
+            keyboard = [
+                [InlineKeyboardButton("➕ Agregar otra", callback_data="back_to_results")],
+                [InlineKeyboardButton("📝 Ver mi Playlist", callback_data="playlist_finish")],
+                [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+            ]
+            
+            guide_text = f"╔═══════════════════════════════╗\n"
+            guide_text += f"║  🎉 *PLAYLIST CREADA* 🎉  ║\n"
+            guide_text += f"╚═══════════════════════════════╝\n\n"
+            guide_text += f"✅ *¡Tu playlist ha sido creada!*\n\n"
+            guide_text += f"🎵 *Primera {content_type} agregada:*\n"
+            guide_text += f"   {selected['title'][:40]}\n\n"
+            guide_text += f"👤 *Artista:*\n"
+            guide_text += f"   {selected['artist'][:40]}\n\n"
+            guide_text += f"{MINI_SEP}\n\n"
+            guide_text += f"💡 *Próximos pasos:*\n"
+            guide_text += f"   • Agrega más canciones a tu playlist\n"
+            guide_text += f"   • Busca y selecciona cualquier contenido\n"
+            guide_text += f"   • Usa el botón '➕ Agregar a Playlist'\n"
+            guide_text += f"   • Cuando termines, ve a 'Ver mi Playlist'\n\n"
+            guide_text += f"🐺 ¡Sigue agregando más música!"
+            
+            await query.edit_message_text(
+                guide_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+            return
     
     async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Maneja errores globales"""
@@ -1252,5 +1481,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
