@@ -2,7 +2,7 @@
 
 ## 📝 Resumen de Mejoras
 
-Se han realizado mejoras importantes en la experiencia de usuario del bot, especialmente en la forma de reproducir y descargar música.
+Se han realizado mejoras importantes en la experiencia de usuario del bot, especialmente en la forma de reproducir y descargar música, además de corrección de bugs importantes.
 
 ---
 
@@ -53,6 +53,22 @@ Se han realizado mejoras importantes en la experiencia de usuario del bot, espec
 **Audio Descargado:**
 - Caption mejorado con emoji ✅
 - Indica que está "Listo para reproducir"
+
+---
+
+### 4. 🐛 CORRECCIÓN: Error al volver atrás
+
+**PROBLEMA:**
+- Al presionar "Volver a Resultados" desde el audio descargado, aparecía error
+- El botón intentaba editar un mensaje que no se podía editar
+
+**SOLUCIÓN:**
+- Ahora el bot detecta cuando no puede editar el mensaje
+- En lugar de dar error, envía un nuevo mensaje con los resultados
+- Maneja correctamente los casos de búsquedas expiradas
+- Mejor manejo de errores con try-catch
+
+**Resultado:** Ya no verás el error "⚠️ ERROR ⚠️" al volver atrás.
 
 ---
 
