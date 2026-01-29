@@ -1278,22 +1278,61 @@ class MusicBot:
         # Volver a resultados
         if data == "back_to_results":
             if user_id not in self.user_searches:
-                await query.edit_message_text("⏰ Búsqueda expirada.")
+                # Si no hay búsqueda guardada, enviar nuevo mensaje en lugar de editar
+                keyboard = [[InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]]
+                try:
+                    await query.edit_message_text(
+                        "⏰ *Búsqueda expirada*\n\n"
+                        "La búsqueda anterior ya no está disponible.\n"
+                        "Por favor, realiza una nueva búsqueda.",
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        parse_mode='Markdown'
+                    )
+                except:
+                    # Si no se puede editar (ej: mensaje de audio), enviar nuevo mensaje
+                    await query.message.reply_text(
+                        "⏰ *Búsqueda expirada*\n\n"
+                        "La búsqueda anterior ya no está disponible.\n"
+                        "Por favor, realiza una nueva búsqueda.\n\n"
+                        "Usa /start para volver al menú.",
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        parse_mode='Markdown'
+                    )
                 return
             
             user_data = self.user_searches[user_id]
             results = user_data['results']
             search_type = user_data.get('search_type', 'songs')
             page = user_data.get('page', 0)
+            query_text = user_data.get('query', 'Búsqueda')
             
             keyboard = self.create_results_keyboard(results, page=page, search_type=search_type)
             
-            await query.edit_message_text(
-                f"🔍 *Búsqueda:* {user_data['query']}\n\n"
-                f"👇 Selecciona una opción:",
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode='Markdown'
-            )
+            # Determinar el mensaje según el tipo de búsqueda
+            icon = "💿" if search_type == "discography" else "📀" if search_type == "albums" else "🎤" if search_type == "karaoke" else "🎵"
+            
+            result_message = f"╔═══════════════════════════════╗\n"
+            result_message += f"║  {icon} *RESULTADOS* {icon}  ║\n"
+            result_message += f"╚═══════════════════════════════╝\n\n"
+            result_message += f"🔍 *Búsqueda:* _{query_text}_\n"
+            result_message += f"✅ *Total:* {len(results)} resultados\n\n"
+            result_message += f"{MINI_SEP}\n"
+            result_message += f"👇 *Selecciona una opción:*"
+            
+            try:
+                await query.edit_message_text(
+                    result_message,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+            except Exception as e:
+                # Si no se puede editar el mensaje (ej: es un mensaje de audio), enviar uno nuevo
+                logger.error(f"No se pudo editar mensaje: {e}")
+                await query.message.reply_text(
+                    result_message,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
             return
         
         # Finalizar playlist
@@ -1552,4 +1591,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
