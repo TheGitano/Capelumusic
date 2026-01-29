@@ -1054,9 +1054,10 @@ class MusicBot:
                 content_type = "canción"
             
             # Opciones con botón de agregar a playlist
+            # El botón Reproducir ahora abre YouTube DIRECTAMENTE
             keyboard = [
                 [
-                    InlineKeyboardButton("▶️ Reproducir", callback_data=f"link_{idx}"),
+                    InlineKeyboardButton("▶️ Reproducir", url=url),  # URL directo, sin callback
                     InlineKeyboardButton("⬇️ Descargar", callback_data=f"download_{idx}")
                 ],
                 [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_{idx}")],
