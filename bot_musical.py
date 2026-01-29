@@ -23,15 +23,11 @@ if not TOKEN:
 
 # Logo mejorado del bot
 LOGO = """
-logo_combinado = r"""
-╔════════════════════════╗
-║ 🐺🎸 BOT MUSICAL VERONICA 🎸🐺 ║
-║ ♪♫ Tu Asistente Musical ♫♪ ║
-╠════════════════════════╣
-"""
-
-print(logo_combinado)
-
+╔═══════════════════════════════════╗
+║  🐺    BOT MUSICAL VERONICA    🐺  ║
+║     ♪♫  Tu Asistente Musical  ♫♪   ║
+║          🎵 🎶 🎸 🎹 🎤           ║
+╚═══════════════════════════════════╝
 """
 
 # Separadores visuales
@@ -99,7 +95,7 @@ class MusicBot:
         
         welcome_text = f"{LOGO}\n"
         welcome_text += f"╭─────────────────────────╮\n"
-        welcome_text += f"│  ✨ ¡Hola *{Veronica}*! ✨  \n"
+        welcome_text += f"│  ✨ ¡Hola *{user_name}*! ✨  \n"
         welcome_text += f"╰─────────────────────────╯\n\n"
         welcome_text += f"🎼 *Bienvenido a tu asistente musical* 🎼\n\n"
         welcome_text += f"🔥 *Funciones disponibles:*\n"
@@ -161,7 +157,7 @@ class MusicBot:
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Busca canciones por nombre o artista.\n"
         help_text += f"✨ Resultados ilimitados\n"
-        help_text += f"📝 Ejemplo: `🕯️🩸🦇𝕍𝕀𝕃𝕄𝔸 𝔓𝔸𝕃𝕄𝔸 𝔢 𝕍𝔸𝕄𝔓𝕀ℝ𝕆𝕊🦇🕯️🩸` o `🌙🕌✨ 🐪💃 🕯️🔥🌵 𝕋𝔞𝔯𝔨𝔞𝔫 🌙🕌✨ 🐪💃 🕯️🔥🌵`\n\n"
+        help_text += f"📝 Ejemplo: `Bad Bunny` o `Tusa`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
@@ -778,10 +774,9 @@ class MusicBot:
             menu_text += f"🌍 *De todo el mundo*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Vilma Palma E Vampiros`\n"
-            menu_text += f"   • `Tarkan`\n"
-            menu_text += f"   • `Sean Paul`\n"
-            
+            menu_text += f"   • `Bad Bunny`\n"
+            menu_text += f"   • `Monaco Bad Bunny`\n"
+            menu_text += f"   • `Shakira Waka Waka`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -798,9 +793,9 @@ class MusicBot:
             menu_text += f"🎵 *Versiones instrumentales*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Gloria Trevi Dr. Psiquiatra`\n"
-            menu_text += f"   • `Raphael Como yo te amo`\n"
-            menu_text += f"   • `Air Supply Goodbye`"
+            menu_text += f"   • `Bohemian Rhapsody`\n"
+            menu_text += f"   • `The Weeknd Blinding Lights`\n"
+            menu_text += f"   • `Luis Miguel`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -822,8 +817,8 @@ class MusicBot:
             menu_text += f"📝 *Ejemplos:*\n"
             menu_text += f"   • `Metallica`\n"
             menu_text += f"   • `Pink Floyd`\n"
-            menu_text += f"   • `ACDC`\n"
-            menu_text += f"   • `IRON MAIDEN`"
+            menu_text += f"   • `Bad Bunny`\n"
+            menu_text += f"   • `Queen`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -842,10 +837,10 @@ class MusicBot:
             menu_text += f"🎵 *Resultados ilimitados*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Vilma Palma E Vampiros 3980`\n"
-            menu_text += f"   • `Luis Miguel Soy Como Quiero Ser`\n"
-            menu_text += f"   • `Patricio Rey y Sus Redonditos de Ricota La Mosca Y La Sopa`\n"
-            menu_text += f"   • `Franco Simone Italia 77`"
+            menu_text += f"   • `The Wall Pink Floyd`\n"
+            menu_text += f"   • `Thriller Michael Jackson`\n"
+            menu_text += f"   • `Un Verano Sin Ti`\n"
+            menu_text += f"   • `Abbey Road`"
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
@@ -927,25 +922,25 @@ class MusicBot:
             help_text += f"│  🎵 *BUSCAR CANCIONES*  │\n"
             help_text += f"└─────────────────────────┘\n"
             help_text += f"Busca canciones ilimitadas.\n"
-            help_text += f"📝 `Dorian`, `Targa`\n\n"
+            help_text += f"📝 `Bad Bunny`, `Tusa`\n\n"
             
             help_text += f"┌─────────────────────────┐\n"
             help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
             help_text += f"└─────────────────────────┘\n"
             help_text += f"Versiones instrumentales.\n"
-            help_text += f"📝 `Nightwish`\n\n"
+            help_text += f"📝 `Bohemian Rhapsody`\n\n"
             
             help_text += f"┌─────────────────────────┐\n"
             help_text += f"│ 💿 *DISCOGRAFÍAS*│\n"
             help_text += f"└─────────────────────────┘\n"
             help_text += f"Toda la discografía completa.\n"
-            help_text += f"📝 `Metallica`, `Iron Maiden`\n\n"
+            help_text += f"📝 `Metallica`, `Queen`\n\n"
             
             help_text += f"┌─────────────────────────┐\n"
             help_text += f"│  📀 *ÁLBUMES*    │\n"
             help_text += f"└─────────────────────────┘\n"
             help_text += f"Álbumes completos del mundo.\n"
-            help_text += f"📝 `Italia 77`, `Romances`\n\n"
+            help_text += f"📝 `The Wall`, `Thriller`\n\n"
             
             help_text += f"{SEPARATOR}\n\n"
             help_text += f"⚡ *Límite:* 20 búsquedas/min\n"
