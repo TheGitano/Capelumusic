@@ -829,10 +829,9 @@ class MusicBot:
             menu_text += f"🌍 *De todo el mundo*\n\n"
             menu_text += f"{MINI_SEP}\n\n"
             menu_text += f"📝 *Ejemplos:*\n"
-            menu_text += f"   • `Marco Antonio Solis`\n"
-            menu_text += f"   • `Juan Luis Guerra`\n"
-            menu_text += f"   • `Rocio Durcal`"
-            menu_text += f"   • `Ana Gabriel`"
+            menu_text += f"   • `🕯️🩸🦇𝕍𝕀𝕃𝕄𝔸 𝔓𝔸𝕃𝕄𝔸 𝔢 𝕍𝔸𝕄𝔓𝕀ℝ𝕆𝕊🦇🕯️🩸`\n"
+            menu_text += f"   • `🌙🕌✨ 🐪💃 🕯️🔥🌵 𝕋𝔞𝔯𝔨𝔞𝔫 🌙🕌✨ 🐪💃 🕯️🔥🌵`\n"
+            
             
             await query.edit_message_text(menu_text, parse_mode='Markdown')
             return
