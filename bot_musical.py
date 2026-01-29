@@ -157,28 +157,28 @@ class MusicBot:
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Busca canciones por nombre o artista.\n"
         help_text += f"✨ Resultados ilimitados\n"
-        help_text += f"📝 Ejemplo: `Bad Bunny` o `Tusa`\n\n"
+        help_text += f"📝 Ejemplo: `Vilma Palma E Vampiros` o `Miguel Bose`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Encuentra versiones karaoke.\n"
         help_text += f"✨ Sin límites de búsqueda\n"
-        help_text += f"📝 Ejemplo: `Bohemian Rhapsody`\n\n"
+        help_text += f"📝 Ejemplo: `Rocio Durcal`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│ 💿 *BUSCAR DISCOGRAFÍAS*│\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Toda la discografía de un artista.\n"
         help_text += f"✨ Álbumes, compilaciones, ediciones\n"
-        help_text += f"📝 Ejemplo: `Metallica`, `Queen`\n\n"
+        help_text += f"📝 Ejemplo: `Metallica`, `Iron Maiden`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  📀 *BUSCAR ÁLBUMES*    │\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Álbumes completos del mundo.\n"
         help_text += f"✨ Búsqueda sin restricciones\n"
-        help_text += f"📝 Ejemplo: `The Wall`, `Thriller`\n\n"
+        help_text += f"📝 Ejemplo: `Italia 77`, `Romances`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  📝 *CREAR PLAYLIST*    │\n"
@@ -1642,3 +1642,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
