@@ -125,7 +125,13 @@ El bot cuenta con:
 
 ## 📝 Notas de Versión
 
-### Versión 2.1 (Actual) - UX Mejorada
+### Versión 2.1.1 (Actual) - Bugfix Crítico
+- 🐛 **CORREGIDO:** Error al presionar "Volver a Resultados" después de descargar
+- ✅ Mejor manejo de mensajes que no se pueden editar
+- 🔧 Manejo robusto de errores en callbacks
+- 💬 Mensajes de error más informativos
+
+### Versión 2.1 - UX Mejorada
 - ✨ Botón "Abrir en YouTube" más claro y honesto
 - 📥 Descarga como opción principal destacada
 - 💬 Mensajes más claros sobre qué hace cada opción
