@@ -1056,7 +1056,7 @@ class MusicBot:
             # Opciones mejoradas - Descargar es la opción principal
             keyboard = [
                 [InlineKeyboardButton("📥 DESCARGAR MP3 HD", callback_data=f"download_{idx}")],
-                [InlineKeyboardButton("🎬 Abrir en YouTube", url=url)],  # URL directo - Telegram pedirá confirmación
+                [InlineKeyboardButton("🎬 Ver Video", url=url)],  # Más corto y directo
                 [InlineKeyboardButton(f"➕ Agregar a Playlist", callback_data=f"add_to_playlist_{idx}")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
@@ -1073,7 +1073,7 @@ class MusicBot:
             detail_text += f"{MINI_SEP}\n\n"
             detail_text += f"💡 *Opciones:*\n"
             detail_text += f"   📥 Descargar = Audio MP3 en el chat\n"
-            detail_text += f"   🎬 YouTube = Abre en navegador/app\n\n"
+            detail_text += f"   🎬 Ver Video = Abre en YouTube\n\n"
             detail_text += f"👇 *Selecciona una opción:*"
             
             await query.edit_message_text(
@@ -1105,26 +1105,25 @@ class MusicBot:
             
             # Crear botón que abre YouTube directamente
             keyboard = [
-                [InlineKeyboardButton("🎬 ABRIR EN YOUTUBE", url=selected['url'])],
+                [InlineKeyboardButton("🎬 VER VIDEO", url=selected['url'])],
                 [InlineKeyboardButton(f"➕ Agregar a Playlist", callback_data=f"add_to_playlist_from_link")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
             
             play_text = f"╔═══════════════════════════════╗\n"
-            play_text += f"║  🎬 *ABRIR EN YOUTUBE* 🎬  ║\n"
+            play_text += f"║  🎬 *VER VIDEO* 🎬  ║\n"
             play_text += f"╚═══════════════════════════════╝\n\n"
             play_text += f"🎵 *Título:*\n"
             play_text += f"   {selected['title'][:50]}\n\n"
             play_text += f"👤 *Artista:*\n"
             play_text += f"   {selected['artist'][:50]}\n\n"
             play_text += f"{MINI_SEP}\n\n"
-            play_text += f"💡 Al presionar el botón de abajo,\n"
-            play_text += f"   Telegram te pedirá confirmación\n"
-            play_text += f"   para abrir YouTube.\n\n"
-            play_text += f"⚠️ *Nota:* Esto es una medida de\n"
-            play_text += f"   seguridad de Telegram.\n\n"
-            play_text += f"🎬 Presiona el botón para continuar"
+            play_text += f"💡 Al presionar el botón,\n"
+            play_text += f"   se abrirá el video en YouTube.\n\n"
+            play_text += f"📱 Telegram puede pedir confirmación\n"
+            play_text += f"   (es una medida de seguridad)\n\n"
+            play_text += f"🎬 Presiona el botón para ver el video"
             
             await query.edit_message_text(
                 play_text,
