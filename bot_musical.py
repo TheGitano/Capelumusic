@@ -1053,14 +1053,11 @@ class MusicBot:
             else:
                 content_type = "canción"
             
-            # Opciones con botón de agregar a playlist
-            # El botón Reproducir ahora abre YouTube DIRECTAMENTE
+            # Opciones mejoradas - Descargar es la opción principal
             keyboard = [
-                [
-                    InlineKeyboardButton("▶️ Reproducir", url=url),  # URL directo, sin callback
-                    InlineKeyboardButton("⬇️ Descargar", callback_data=f"download_{idx}")
-                ],
-                [InlineKeyboardButton(f"➕ Agregar esta {content_type} a Playlist", callback_data=f"add_to_playlist_{idx}")],
+                [InlineKeyboardButton("📥 DESCARGAR MP3 HD", callback_data=f"download_{idx}")],
+                [InlineKeyboardButton("🎬 Abrir en YouTube", url=url)],  # URL directo - Telegram pedirá confirmación
+                [InlineKeyboardButton(f"➕ Agregar a Playlist", callback_data=f"add_to_playlist_{idx}")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
@@ -1073,8 +1070,11 @@ class MusicBot:
             detail_text += f"👤 *Artista:*\n"
             detail_text += f"   {artist[:50]}\n\n"
             detail_text += f"⏱️ *Duración:* {duration_str}\n\n"
-            detail_text += f"{MINI_SEP}\n"
-            detail_text += f"👇 *¿Qué quieres hacer?*"
+            detail_text += f"{MINI_SEP}\n\n"
+            detail_text += f"💡 *Opciones:*\n"
+            detail_text += f"   📥 Descargar = Audio MP3 en el chat\n"
+            detail_text += f"   🎬 YouTube = Abre en navegador/app\n\n"
+            detail_text += f"👇 *Selecciona una opción:*"
             
             await query.edit_message_text(
                 detail_text,
@@ -1105,23 +1105,26 @@ class MusicBot:
             
             # Crear botón que abre YouTube directamente
             keyboard = [
-                [InlineKeyboardButton("▶️ REPRODUCIR EN YOUTUBE", url=selected['url'])],
-                [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
+                [InlineKeyboardButton("🎬 ABRIR EN YOUTUBE", url=selected['url'])],
+                [InlineKeyboardButton(f"➕ Agregar a Playlist", callback_data=f"add_to_playlist_from_link")],
                 [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
                 [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
             ]
             
             play_text = f"╔═══════════════════════════════╗\n"
-            play_text += f"║  ▶️ *LISTO PARA REPRODUCIR* ▶️  ║\n"
+            play_text += f"║  🎬 *ABRIR EN YOUTUBE* 🎬  ║\n"
             play_text += f"╚═══════════════════════════════╝\n\n"
             play_text += f"🎵 *Título:*\n"
             play_text += f"   {selected['title'][:50]}\n\n"
             play_text += f"👤 *Artista:*\n"
             play_text += f"   {selected['artist'][:50]}\n\n"
             play_text += f"{MINI_SEP}\n\n"
-            play_text += f"💡 Presiona el botón de abajo para\n"
-            play_text += f"   reproducir en YouTube\n\n"
-            play_text += f"🐺 ¡Disfruta! 💕"
+            play_text += f"💡 Al presionar el botón de abajo,\n"
+            play_text += f"   Telegram te pedirá confirmación\n"
+            play_text += f"   para abrir YouTube.\n\n"
+            play_text += f"⚠️ *Nota:* Esto es una medida de\n"
+            play_text += f"   seguridad de Telegram.\n\n"
+            play_text += f"🎬 Presiona el botón para continuar"
             
             await query.edit_message_text(
                 play_text,
@@ -1151,11 +1154,12 @@ class MusicBot:
                 content_type = "canción"
             
             download_text = f"╔═══════════════════════════════╗\n"
-            download_text += f"║  ⬇️ *DESCARGANDO...* ⬇️  ║\n"
+            download_text += f"║  📥 *DESCARGANDO MP3* 📥  ║\n"
             download_text += f"╚═══════════════════════════════╝\n\n"
             download_text += f"🎵 {selected['title'][:40]}\n\n"
-            download_text += f"⏳ Esto puede tardar un momento...\n"
-            download_text += f"🐺 Preparando tu MP3 HD..."
+            download_text += f"⏳ Preparando tu archivo...\n"
+            download_text += f"💎 Calidad: MP3 HD (192kbps)\n"
+            download_text += f"🐺 Esto puede tardar un momento..."
             
             await query.edit_message_text(download_text, parse_mode='Markdown')
             
@@ -1174,10 +1178,11 @@ class MusicBot:
                     ]
                     
                     with open(filename, 'rb') as audio_file:
-                        caption = f"🐺🎵 *{title[:50]}*\n\n"
-                        caption += f"💾 Formato: MP3 HD\n"
-                        caption += f"✅ Descargado exitosamente\n"
-                        caption += f"🐺 ¡Disfruta! 💕"
+                        caption = f"✅ *¡LISTO!* Tu música está aquí 🎵\n\n"
+                        caption += f"🎵 *{title[:45]}*\n\n"
+                        caption += f"💎 Calidad: MP3 HD (192kbps)\n"
+                        caption += f"📱 Listo para reproducir\n"
+                        caption += f"🐺 ¡Disfruta tu música! 💕"
                         
                         await query.message.reply_audio(
                             audio=audio_file,
@@ -1189,7 +1194,9 @@ class MusicBot:
                     
                     # Actualizar mensaje anterior
                     await query.edit_message_text(
-                        "✅ ¡Audio enviado abajo! 🎵",
+                        "✅ *¡Audio enviado!*\n\n"
+                        "🎵 Revisa el mensaje de abajo\n"
+                        "🐺 ¡Que lo disfrutes! 💕",
                         parse_mode='Markdown'
                     )
                     
@@ -1545,3 +1552,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
