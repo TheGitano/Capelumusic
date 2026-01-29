@@ -157,28 +157,28 @@ class MusicBot:
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Busca canciones por nombre o artista.\n"
         help_text += f"✨ Resultados ilimitados\n"
-        help_text += f"📝 Ejemplo: `Vilma Palma E Vampiros` o `Miguel Bose`\n\n"
+        help_text += f"📝 Ejemplo: `Bad Bunny` o `Tusa`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  🎤 *BUSCAR KARAOKES*   │\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Encuentra versiones karaoke.\n"
         help_text += f"✨ Sin límites de búsqueda\n"
-        help_text += f"📝 Ejemplo: `Rocio Durcal`\n\n"
+        help_text += f"📝 Ejemplo: `Bohemian Rhapsody`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│ 💿 *BUSCAR DISCOGRAFÍAS*│\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Toda la discografía de un artista.\n"
         help_text += f"✨ Álbumes, compilaciones, ediciones\n"
-        help_text += f"📝 Ejemplo: `Metallica`, `Iron Maiden`\n\n"
+        help_text += f"📝 Ejemplo: `Metallica`, `Queen`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  📀 *BUSCAR ÁLBUMES*    │\n"
         help_text += f"└─────────────────────────┘\n"
         help_text += f"Álbumes completos del mundo.\n"
         help_text += f"✨ Búsqueda sin restricciones\n"
-        help_text += f"📝 Ejemplo: `Italia 77`, `Romances`\n\n"
+        help_text += f"📝 Ejemplo: `The Wall`, `Thriller`\n\n"
         
         help_text += f"┌─────────────────────────┐\n"
         help_text += f"│  📝 *CREAR PLAYLIST*    │\n"
@@ -1082,7 +1082,7 @@ class MusicBot:
             )
             return
         
-        # Reproducir audio directamente (antes era solo "link")
+        # Reproducir (abrir en YouTube directamente, SIN descargar)
         if data.startswith("link_"):
             if user_id not in self.user_searches or 'selected' not in self.user_searches[user_id]:
                 await query.edit_message_text("❌ Error.")
@@ -1102,129 +1102,31 @@ class MusicBot:
             else:
                 content_type = "canción"
             
-            # Mostrar mensaje de carga
+            # Crear botón que abre YouTube directamente
+            keyboard = [
+                [InlineKeyboardButton("▶️ REPRODUCIR EN YOUTUBE", url=selected['url'])],
+                [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
+                [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
+                [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
+            ]
+            
+            play_text = f"╔═══════════════════════════════╗\n"
+            play_text += f"║  ▶️ *LISTO PARA REPRODUCIR* ▶️  ║\n"
+            play_text += f"╚═══════════════════════════════╝\n\n"
+            play_text += f"🎵 *Título:*\n"
+            play_text += f"   {selected['title'][:50]}\n\n"
+            play_text += f"👤 *Artista:*\n"
+            play_text += f"   {selected['artist'][:50]}\n\n"
+            play_text += f"{MINI_SEP}\n\n"
+            play_text += f"💡 Presiona el botón de abajo para\n"
+            play_text += f"   reproducir en YouTube\n\n"
+            play_text += f"🐺 ¡Disfruta! 💕"
+            
             await query.edit_message_text(
-                f"🎵 *Reproduciendo...*\n\n"
-                f"⏳ Preparando el audio de:\n"
-                f"_{selected['title'][:40]}_\n\n"
-                f"🐺 Un momento por favor...",
+                play_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
-            
-            # Intentar descargar y reproducir
-            try:
-                filename, title = await asyncio.wait_for(
-                    self.download_audio(selected['url'], user_id),
-                    timeout=120.0
-                )
-                
-                if filename and os.path.exists(filename):
-                    # Botones para el audio
-                    keyboard = [
-                        [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
-                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
-                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
-                    ]
-                    
-                    with open(filename, 'rb') as audio_file:
-                        caption = f"🐺🎵 *{title[:50]}*\n\n"
-                        caption += f"👤 {selected['artist'][:40]}\n"
-                        caption += f"💾 Formato: MP3 HD\n"
-                        caption += f"🐺 ¡Disfruta! 💕"
-                        
-                        await query.message.reply_audio(
-                            audio=audio_file,
-                            title=title,
-                            caption=caption,
-                            parse_mode='Markdown',
-                            reply_markup=InlineKeyboardMarkup(keyboard)
-                        )
-                    
-                    # Actualizar mensaje
-                    await query.edit_message_text(
-                        "✅ ¡Audio reproduciendo abajo! 🎵",
-                        parse_mode='Markdown'
-                    )
-                    
-                    try:
-                        os.remove(filename)
-                    except:
-                        pass
-                else:
-                    # Si no se pudo descargar, mostrar botón directo a YouTube
-                    keyboard = [
-                        [InlineKeyboardButton("▶️ REPRODUCIR ", url=selected['url'])],
-                        [InlineKeyboardButton(f"➕ ¿Agregar a tu Playlist?", callback_data=f"add_to_playlist_from_link")],
-                        [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
-                        [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
-                    ]
-                    
-                    warning_text = f"╔═══════════════════════════════╗\n"
-                    warning_text += f"║  ⚠️ *NO PUDE DESCARGAR* ⚠️  ║\n"
-                    warning_text += f"╚═══════════════════════════════╝\n\n"
-                    warning_text += f"🎵 *Título:*\n"
-                    warning_text += f"   {selected['title'][:50]}\n\n"
-                    warning_text += f"👤 *Artista:*\n"
-                    warning_text += f"   {selected['artist'][:50]}\n\n"
-                    warning_text += f"{MINI_SEP}\n\n"
-                    warning_text += f"💡 Pero puedes reproducirlo aquí:\n"
-                    warning_text += f"👇 *Presiona el botón de abajo*\n\n"
-                    warning_text += f"🐺 ¡Solo toca el botón! 💕"
-                    
-                    await query.edit_message_text(
-                        warning_text,
-                        reply_markup=InlineKeyboardMarkup(keyboard),
-                        parse_mode='Markdown'
-                    )
-                    
-            except asyncio.TimeoutError:
-                # Timeout - material no disponible
-                keyboard = [
-                    [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
-                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
-                ]
-                
-                error_text = f"╔═══════════════════════════════╗\n"
-                error_text += f"║  ⚠️ *MATERIAL NO DISPONIBLE* ⚠️  ║\n"
-                error_text += f"╚═══════════════════════════════╝\n\n"
-                error_text += f"😔 Lo siento mucho...\n\n"
-                error_text += f"🚫 *Este material ya no se encuentra*\n"
-                error_text += f"   *disponible en la red.*\n\n"
-                error_text += f"💡 Por favor, elige otro tema.\n\n"
-                error_text += f"{SEPARATOR}\n"
-                error_text += f"🐺 ¡Disculpa las molestias!\n"
-                error_text += f"   *- Vero* 💕"
-                
-                await query.edit_message_text(
-                    error_text,
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
-                
-            except Exception as e:
-                logger.error(f"Error al reproducir: {e}")
-                # Error general - material no disponible
-                keyboard = [
-                    [InlineKeyboardButton("🔙 Volver a Resultados", callback_data="back_to_results")],
-                    [InlineKeyboardButton("🏠 Menú Principal", callback_data="back_to_main_menu")]
-                ]
-                
-                error_text = f"╔═══════════════════════════════╗\n"
-                error_text += f"║  ⚠️ *MATERIAL NO DISPONIBLE* ⚠️  ║\n"
-                error_text += f"╚═══════════════════════════════╝\n\n"
-                error_text += f"😔 Lo siento mucho...\n\n"
-                error_text += f"🚫 *Este material ya no se encuentra*\n"
-                error_text += f"   *disponible en la red.*\n\n"
-                error_text += f"💡 Por favor, elige otro tema.\n\n"
-                error_text += f"{SEPARATOR}\n"
-                error_text += f"🐺 ¡Disculpa las molestias!\n"
-                error_text += f"   *- Vero* 💕"
-                
-                await query.edit_message_text(
-                    error_text,
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
             return
         
         # Descargar audio
@@ -1642,4 +1544,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
