@@ -1,6 +1,6 @@
-# 🐺 Bot Musical Veronica - Versión 2.0 Premium
+# 🐺 Bot Musical Veronica - Versión 2.1 (UX Mejorada)
 
-Bot de Telegram para búsqueda y descarga de música con interfaz hermosa y funcionalidades avanzadas.
+Bot de Telegram para búsqueda y descarga de música con interfaz hermosa, funcionalidades avanzadas y experiencia de usuario optimizada.
 
 ## ✨ Características Principales
 
@@ -125,7 +125,15 @@ El bot cuenta con:
 
 ## 📝 Notas de Versión
 
-### Versión 2.0 (Actual)
+### Versión 2.1 (Actual) - UX Mejorada
+- ✨ Botón "Abrir en YouTube" más claro y honesto
+- 📥 Descarga como opción principal destacada
+- 💬 Mensajes más claros sobre qué hace cada opción
+- 🎨 Mejor organización de botones
+- 📱 Explicaciones sobre el diálogo de confirmación de Telegram
+- 🐛 Mejoras en textos de descarga y audio enviado
+
+### Versión 2.0
 - ✨ Menú completamente rediseñado
 - 💿 Nueva función: Búsqueda de discografías completas
 - 📀 Nueva función: Búsqueda de álbumes completos
